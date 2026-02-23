@@ -1,0 +1,433 @@
+{
+  "preguntas": [
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nmy_list = [1, 2]\n\nfor v in range(2):\n    my_list.insert(-1, my_list[v])\n\nprint(my_list)\n[FIN_CODIGO]",
+      "opciones": [
+        "[2, 1, 1, 2]",
+        "[1, 2, 2, 2]",
+        "[1, 1, 1, 2]",
+        "[1, 2, 1, 2]"
+      ],
+      "respuesta_correcta": "[1, 1, 1, 2]",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "El significado de un argumento posicional está determinado por:",
+      "opciones": [
+        "su posición dentro de la lista de argumentos",
+        "su conexión con variables existentes",
+        "el nombre del argumento especificado junto con su valor",
+        "su valor"
+      ],
+      "respuesta_correcta": "su posición dentro de la lista de argumentos",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuáles de los siguientes enunciados son verdaderos respecto al código?\n[INICIO_CODIGO]\nnums = [1, 2, 3]\nvals = nums\n[FIN_CODIGO]",
+      "opciones": [
+        "vals es más larga que nums",
+        "nums y vals son listas diferentes",
+        "nums tiene la misma longitud que vals",
+        "nums y vals son diferentes nombres de la misma lista"
+      ],
+      "respuesta_correcta": ["nums tiene la misma longitud que vals", "nums y vals son diferentes nombres de la misma lista"],
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "Un operador capaz de verificar si dos valores no son iguales se codifica como:",
+      "opciones": [
+        "not ==",
+        "=/=",
+        "!=",
+        "<>"
+      ],
+      "respuesta_correcta": "!=",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "El siguiente fragmento de código:\n[INICIO_CODIGO]\ndef function_1(a):\n    return None\n\ndef function_2(a):\n    return function_1(a) * function_1(a)\n\nprint(function_2(2))\n[FIN_CODIGO]",
+      "opciones": [
+        "dará como salida 2",
+        "provocará un error de ejecución",
+        "dará como salida 4",
+        "dará como salida 16"
+      ],
+      "respuesta_correcta": "provocará un error de ejecución",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "El resultado de la siguiente división:\n[INICIO_CODIGO]\n1 // 2\n[FIN_CODIGO]",
+      "opciones": [
+        "es igual a 0.5",
+        "es igual a 0.0",
+        "no se puede predecir",
+        "es igual a 0"
+      ],
+      "respuesta_correcta": "es igual a 0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "El siguiente fragmento de código:\n[INICIO_CODIGO]\ndef func(a, b):\n    return b ** a\n\nprint(func(b=2, 2))\n[FIN_CODIGO]",
+      "opciones": [
+        "dará como salida 2",
+        "es erróneo",
+        "dará como salida None",
+        "dará como salida 4"
+      ],
+      "respuesta_correcta": "es erróneo",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Qué valor se asignará a la variable x?\n[INICIO_CODIGO]\nz = 0\ny = 10\nx = y < z and z > y or y < z and z < y\n[FIN_CODIGO]",
+      "opciones": [
+        "1",
+        "0",
+        "True",
+        "False"
+      ],
+      "respuesta_correcta": "False",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuáles de los siguientes nombres de variable son ilegales y provocarán una excepción de SyntaxError?",
+      "opciones": [
+        "print",
+        "In",
+        "in",
+        "for"
+      ],
+      "respuesta_correcta": ["in", "for"],
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nmy_list = [x * x for x in range(5)]\n\ndef fun(lst):\n    del lst[lst[2]]\n    return lst\n\nprint(fun(my_list))\n[FIN_CODIGO]",
+      "opciones": [
+        "[0, 1, 9, 16]",
+        "[1, 4, 9, 16]",
+        "[0, 1, 4, 9]",
+        "[0, 1, 4, 16]"
+      ],
+      "respuesta_correcta": "[0, 1, 4, 9]",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nx = 1\ny = 2\nx, y, z = x, x, y\nz, y, z = x, y, z\n\nprint(x, y, z)\n[FIN_CODIGO]",
+      "opciones": [
+        "1 1 2",
+        "1 2 1",
+        "1 2 2",
+        "2 1 2"
+      ],
+      "respuesta_correcta": "1 1 2",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\na = 1\nb = 0\na = a ^ b\nb = a ^ b\na = a ^ b\n\nprint(a, b)\n[FIN_CODIGO]",
+      "opciones": [
+        "0 1",
+        "1 0",
+        "1 1",
+        "0 0"
+      ],
+      "respuesta_correcta": "0 1",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndef fun(x):\n    if x % 2 == 0:\n        return 1\n    else:\n        return 2\n\nprint(fun(fun(2)))\n[FIN_CODIGO]",
+      "opciones": [
+        "None",
+        "1",
+        "el código provocará un error de ejecución",
+        "2"
+      ],
+      "respuesta_correcta": "2",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "Observa el fragmento de código y elige la sentencia verdadera:\n[INICIO_CODIGO]\nnums = [1, 2, 3]\nvals = nums\ndel vals[:]\n[FIN_CODIGO]",
+      "opciones": [
+        "el código provocará un error de ejecución",
+        "vals es más larga que nums",
+        "nums es más larga que vals",
+        "nums y vals tienen la misma longitud"
+      ],
+      "respuesta_correcta": "nums y vals tienen la misma longitud",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código si el usuario ingresa dos líneas que contienen 3 y 2 respectivamente?\n[INICIO_CODIGO]\nx = int(input())\ny = int(input())\nx = x % y\nx = x % y\ny = y % x\nprint(y)\n[FIN_CODIGO]",
+      "opciones": [
+        "0",
+        "3",
+        "1",
+        "2"
+      ],
+      "respuesta_correcta": "0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código si el usuario ingresa dos líneas que contienen 3 y 6 respectivamente?\n[INICIO_CODIGO]\ny = input()\nx = input()\nprint(x + y)\n[FIN_CODIGO]",
+      "opciones": [
+        "36",
+        "63",
+        "6",
+        "3"
+      ],
+      "respuesta_correcta": "63",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nprint(\"a\", \"b\", \"c\", sep=\"sep\")\n[FIN_CODIGO]",
+      "opciones": [
+        "a b c",
+        "asepbsepcsep",
+        "asepbsepc",
+        "abc"
+      ],
+      "respuesta_correcta": "asepbsepc",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nx = 1 // 5 + 1 / 5\nprint(x)\n[FIN_CODIGO]",
+      "opciones": [
+        "0.4",
+        "0.5",
+        "0.2",
+        "0"
+      ],
+      "respuesta_correcta": "0.2",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "Suponiendo que my_tuple es una tupla creada correctamente, el hecho de que las tuplas sean inmutables significa que la siguiente instrucción:\n[INICIO_CODIGO]\nmy_tuple[1] = my_tuple[1] + my_tuple[0]\n[FIN_CODIGO]",
+      "opciones": [
+        "puede ser ilegal si la tupla contiene cadenas",
+        "es ilegal",
+        "es completamente correcta",
+        "se puede ejecutar si y solo si la tupla contiene al menos dos elementos"
+      ],
+      "respuesta_correcta": "es ilegal",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código si el usuario ingresa dos líneas que contienen 2 y 4 respectivamente?\n[INICIO_CODIGO]\nx = float(input())\ny = float(input())\nprint(y ** (1 / x))\n[FIN_CODIGO]",
+      "opciones": [
+        "1.0",
+        "2.0",
+        "4.2",
+        "0.0"
+      ],
+      "respuesta_correcta": "2.0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndct = {'one': 'two', 'three': 'one', 'two': 'three'}\nv = dct['three']\n\nfor k in range(len(dct)):\n    v = dct[v]\n\nprint(v)\n[FIN_CODIGO]",
+      "opciones": [
+        "two",
+        "three",
+        "one",
+        "('one', 'two', 'three')"
+      ],
+      "respuesta_correcta": "one",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuántos elementos contiene la lista lst?\n[INICIO_CODIGO]\nlst = [i for i in range(-1, -2)]\n[FIN_CODIGO]",
+      "opciones": [
+        "tres",
+        "dos",
+        "cero",
+        "uno"
+      ],
+      "respuesta_correcta": "cero",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuáles de las siguientes líneas correctamente invocan la función definida a continuación?\n[INICIO_CODIGO]\ndef fun(a, b, c=0):\n    # Cuerpo de la función.\n[FIN_CODIGO]",
+      "opciones": [
+        "fun()",
+        "fun(b=1)",
+        "fun(b=0, a=0)",
+        "fun(0, 1, 2)"
+      ],
+      "respuesta_correcta": ["fun(b=0, a=0)", "fun(0, 1, 2)"],
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndef fun(x, y):\n    if x == y:\n        return x\n    else:\n        return fun(x, y-1)\n\nprint(fun(0, 3))\n[FIN_CODIGO]",
+      "opciones": [
+        "1",
+        "0",
+        "2",
+        "el código provocará un error de ejecución"
+      ],
+      "respuesta_correcta": "0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuántos (*) imprimirá el siguiente fragmento de código en la consola?\n[INICIO_CODIGO]\ni = 0\nwhile i < i + 2 :\n    i += 1\n    print(\"*\")\nelse:\n    print(\"*\")\n[FIN_CODIGO]",
+      "opciones": [
+        "el fragmento entrará en un bucle infinito, imprimiendo un * por línea",
+        "0",
+        "1",
+        "2"
+      ],
+      "respuesta_correcta": "el fragmento entrará en un bucle infinito, imprimiendo un * por línea",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ntup = (1, 2, 4, 8)\ntup = tup[-2:-1]\ntup = tup[-1]\nprint(tup)\n[FIN_CODIGO]",
+      "opciones": [
+        "(4,)",
+        "44",
+        "4",
+        "(4)"
+      ],
+      "respuesta_correcta": "4",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndd = {\"1\": \"0\", \"0\": \"1\"}\nfor x in dd.vals():\n    print(x, end=\"\")\n[FIN_CODIGO]",
+      "opciones": [
+        "0 1",
+        "0 0",
+        "el código es erróneo (el objeto dict no contiene el método vals())",
+        "1 0"
+      ],
+      "respuesta_correcta": "el código es erróneo (el objeto dict no contiene el método vals())",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndct = {}\ndct['1'] = (1, 2)\ndct['2'] = (2, 1)\n\nfor x in dct.keys():\n    print(dct[x][1], end=\"\")\n[FIN_CODIGO]",
+      "opciones": [
+        "(2,1)",
+        "(1,2)",
+        "12",
+        "21"
+      ],
+      "respuesta_correcta": "21",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndef fun(inp=2, out=3):\n    return inp * out\n\nprint(fun(out=2))\n[FIN_CODIGO]",
+      "opciones": [
+        "2",
+        "el fragmento de código es erróneo y provocará un SyntaxError",
+        "6",
+        "4"
+      ],
+      "respuesta_correcta": "4",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuántos (#) imprimirá el siguiente fragmento de código en la consola?\n[INICIO_CODIGO]\nlst = [[x for x in range(3)] for y in range(3)]\n\nfor r in range(3):\n    for c in range(3):\n        if lst[r][c] % 2 != 0:\n            print(\"#\")\n[FIN_CODIGO]",
+      "opciones": [
+        "seis",
+        "tres",
+        "cero",
+        "nueve"
+      ],
+      "respuesta_correcta": "tres",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el comportamiento esperado del siguiente programa si el usuario ingresa 0?\n[INICIO_CODIGO]\ntry:\n    value = input(\"Ingresa un valor: \")\n    print(int(value)/len(value))\nexcept ValueError:\n    print(\"Entrada incorrecta...\")\nexcept ZeroDivisionError:\n    print(\"Entrada erronea...\")\nexcept TypeError:\n    print(\"Entrada muy erronea...\")\nexcept:\n    print(\"¡Buuu!\")\n[FIN_CODIGO]",
+      "opciones": [
+        "Entrada muy errónea...",
+        "1.0",
+        "Entrada errónea...",
+        "¡Buuu!",
+        "Entrada incorrecta...",
+        "0.0"
+      ],
+      "respuesta_correcta": "0.0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el comportamiento esperado del siguiente programa?\n[INICIO_CODIGO]\ntry:\n    print(5/0)\n    break\nexcept:\n    print(\"Lo siento, algo salió mal...\")\nexcept (ValueError, ZeroDivisionError):\n    print(\"Mala suerte...\")\n[FIN_CODIGO]",
+      "opciones": [
+        "El programa provocará una excepción ValueError y dará como salida el siguiente mensaje: Mala suerte...",
+        "El programa provocará una excepción ZeroDivisionError y dará como salida el siguiente mensaje: Mala suerte...",
+        "El programa provocará una excepción ZeroDivisionError y dará como salida un mensaje de error predeterminado.",
+        "El programa provocará una excepción ValueError y dará como salida un mensaje de error predeterminado.",
+        "El programa generará una excepción y será manejada por el primer bloque except.",
+        "El programa provocará una excepción SyntaxError."
+      ],
+      "respuesta_correcta": "El programa provocará una excepción SyntaxError.",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el comportamiento esperado del siguiente programa?\n[INICIO_CODIGO]\nfoo = (1, 2, 3)\nfoo.index(0)\n[FIN_CODIGO]",
+      "opciones": [
+        "El programa provocará una excepción SyntaxError.",
+        "El programa dará como salida un 1 en la pantalla.",
+        "El programa provocará una excepción AttributeError.",
+        "El programa provocará una excepción TypeError.",
+        "El programa provocará una excepción ValueError."
+      ],
+      "respuesta_correcta": "El programa provocará una excepción ValueError.",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál de los siguientes fragmentos muestra la forma correcta de manejar múltiples excepciones en una sola cláusula except?\n[INICIO_CODIGO]\n# A:\nexcept (TypeError, ValueError, ZeroDivisionError):\n    # Algo de código.\n\n# B:\nexcept TypeError, ValueError, ZeroDivisionError:\n    # Algo de código.\n# C:\nexcept: (TypeError, ValueError, ZeroDivisionError)\n    # Algo de código.\n\n# D:\nexcept: TypeError, ValueError, ZeroDivisionError\n    # Algo de código.\n# E:\nexcept (TypeError, ValueError, ZeroDivisionError)\n    # Algo de código.\n\n# F:\nexcept TypeError, ValueError, ZeroDivisionError\n    # Algo de código.\n[FIN_CODIGO]",
+      "opciones": [
+        "D y E",
+        "A y B",
+        "A solamente",
+        "F solamente",
+        "A, C, y D",
+        "B y C"
+      ],
+      "respuesta_correcta": "A solamente",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Qué pasará cuando intentes ejecutar el siguiente código?\n[INICIO_CODIGO]\nprint(¡Hola, Mundo!)\n[FIN_CODIGO]",
+      "opciones": [
+        "El código generará la excepción AttributeError.",
+        "El código generará la excepción TypeError.",
+        "El código generará la excepción ValueError.",
+        "El código generará la excepción SyntaxError.",
+        "El código imprimirá ¡Hola, Mundo! en la consola."
+      ],
+      "respuesta_correcta": "El código generará la excepción SyntaxError.",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    }
+  ],
+  "reintento_numero": 0
+}
