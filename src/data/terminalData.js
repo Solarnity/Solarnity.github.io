@@ -68,6 +68,7 @@ export const DATA = [
         id: "2-5",
         name: "MAURICIOCRAFT (me lo mandaron x mail)",
         added: "2026-02-21",
+        link: "https://x.com/mauriciomacri/status/506817804268752896",
       },
       {
         id: "2-6",
@@ -98,7 +99,7 @@ export const DATA = [
         id: "2-11",
         name: "Mari Setagaya",
         added: "2026-02-22",
-        link: "https://tinyurl.com/5cnbea4z",
+        link: "https://i.imgur.com/5u5bp1v.gif",
       },
       {
         id: "2-12",
@@ -158,7 +159,7 @@ export const DATA = [
       },
       {
         id: "3-10",
-        name: "jarvis pedilo",
+        name: "📽️ jarvis pedilo",
         added: "2026-02-22",
         link: "https://youtu.be/G_XeW7P-1hs",
       },
@@ -244,7 +245,7 @@ export const DATA = [
         id: "4-11",
         name: "📁 Dragones",
         added: "2026-02-22",
-        link: "https://tinyurl.com/3a2vesad",
+        link: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmdpancyYW9jZ2J4dG1uaGt4bmQ2bmd3enJvY3VxbHo2dTlxMmdmOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XlNDo114W62dy/giphy.gif",
       },
       {
         id: "4-12",

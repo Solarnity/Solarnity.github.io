@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, BrowserRouter, Routes, Route } from "react-router";
+import { Link, Routes, Route } from "react-router";
 import { DATA } from '../data/terminalData';
 import { VigenereCipher } from '../effects/VigenereCipher';
 

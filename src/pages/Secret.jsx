@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { HomeIcon } from 'lucide-react';
 
 const Secret = () => {
+
   return (
     <>
       {/* Fondo de humo y texto */}

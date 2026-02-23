@@ -1,5 +1,5 @@
 // CalculoMental.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router';
 import { ChevronLeft, Clock, Award, Brain, Settings, BarChart } from 'lucide-react';
 

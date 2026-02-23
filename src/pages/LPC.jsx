@@ -21,10 +21,6 @@ function LPC() {
   const audioRef = useRef(null);
   const currentAudioSrc = useRef(null);
 
-  useEffect(() => {
-    document.title = 'LPC';
-  }, []);
-
   // Reproducción
   const togglePlay = () => {
     if (playlist.length === 0) return;

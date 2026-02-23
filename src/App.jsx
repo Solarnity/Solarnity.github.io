@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, BrowserRouter, Routes, Route } from "react-router";
+import React, { useState, useEffect } from "react";
+import { Link, BrowserRouter, Routes, Route, useLocation } from "react-router";
 import { Layers, Blocks, HomeIcon, Folder, Lock, Image, Hexagon, Calculator, FileQuestionMarkIcon } from 'lucide-react';
 
 import LPC from "./pages/LPC";
@@ -232,9 +232,31 @@ function Home() {
   );
 }
 
+const TitleManager = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const titles = {
+      '/': '< 🎕 >',
+      '/lpc': 'LPC',
+      '/pixels': 'Pixels',
+      '/plrgnm': '- 🎕 -',
+      '/cuestionario': 'Cuestionario',
+      '/calculo': 'Cálculo Mental',
+      '/secret': '???',
+    };
+
+    // Aplicamos el título o uno por defecto si no existe en la lista
+    document.title = titles[location.pathname] || '< 🎕 >';
+  }, [location]);
+
+  return null;
+};
+
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/">
+      <TitleManager />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/lpc" element={<LPC />} />

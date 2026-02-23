@@ -9,10 +9,6 @@ const PixelArtCreator = () => {
     '#4CEAEF', '#3C50F0', '#6B50F6', '#EC1F80',
     '#000000', '#444444', '#787878', '#FFFFFF',
   ];
-
-    useEffect(() => {
-    document.title = 'Pixels';
-  }, []);
   
   // Estados
   const [gridSize, setGridSize] = useState(16);
