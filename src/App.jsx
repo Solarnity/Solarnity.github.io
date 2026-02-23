@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { Link, BrowserRouter, Routes, Route } from "react-router";
-import { Layers, Blocks, HomeIcon, Folder, Lock, Image, Hexagon, FileQuestionMarkIcon } from 'lucide-react';
+import { Layers, Blocks, HomeIcon, Folder, Lock, Image, Hexagon, Calculator, FileQuestionMarkIcon } from 'lucide-react';
 
 import LPC from "./pages/LPC";
 import Pixels from "./pages/Pixels";
+import Terminal from "./pages/Terminal";
+import NotFound from "./pages/NotFound";
+import Cuestionario from "./pages/Cuestionario";
+import CalculoMental from "./pages/CalculoMental";
+import Secret from "./pages/Secret";
 
 import SmokeBackground from "./effects/SmokeBackground";
-import BuzzText from "./effects/BuzzText";
 
 // Lista de navegación
 const navItems = [
@@ -55,13 +59,29 @@ const appRoutes = [
     blocked: false,
   },
   {
+    title: 'Cuestionario',
+    route: '/cuestionario',
+    icon: <FileQuestionMarkIcon />,
+    status: 'v1.0',
+    description: 'Importa tus preguntas y respuestas para practicar',
+    blocked: false,
+  },
+  {
+    title: 'Cálculo Mental',
+    route: '/calculo',
+    icon: <Calculator />,
+    status: 'v1.0',
+    description: 'Ejercita tu mente con operaciones matemáticas',
+    blocked: false,
+  },
+  {
     title: '???',
-    route: '/',
+    route: '',
     icon: <Hexagon />,
     status: 'Pendiente',
     description: '-',
     blocked: true,
-  },
+  }
 ];
 
 // Componente principal de la página de inicio
@@ -145,7 +165,7 @@ function Home() {
         <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 xl:px-40 2xl:px-60 pb-10">
           <div className="w-full max-w-6xl">
             {activeTab === 'proyectos' && (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {appRoutes.map(app => (
                   <Link
                     key={app.route}
@@ -218,7 +238,12 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/lpc" element={<LPC />} />
-        <Route path="/pixels" element={<Pixels/>} />
+        <Route path="/pixels" element={<Pixels />} />
+        <Route path="/plrgnm" element={<Terminal />} />
+        <Route path="/cuestionario" element={<Cuestionario />} />
+        <Route path="/calculo" element={<CalculoMental />} />
+        <Route path="/secret" element={<Secret />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

@@ -13,6 +13,7 @@ module.exports = {
       fontFamily: {
         'sans': ['Inter', ...require('tailwindcss/defaultTheme').fontFamily.sans],
         'merriweather': ['Courier Prime', ...require('tailwindcss/defaultTheme').fontFamily.sans],
+        'mono': ['JetBrains Mono', ...require('tailwindcss/defaultTheme').fontFamily.sans],
       },
       colors: {
         almond: "#F2E5D7",
