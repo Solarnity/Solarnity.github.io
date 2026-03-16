@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Cuestionario from "./pages/Cuestionario";
 import CalculoMental from "./pages/CalculoMental";
 import Secret from "./pages/Secret";
+import DigitalR from "./pages/DigitalR"; // Importamos el nuevo componente de la cuenta regresiva
 
 import SmokeBackground from "./effects/SmokeBackground";
 
@@ -244,6 +245,7 @@ const TitleManager = () => {
       '/cuestionario': 'Cuestionario',
       '/calculo': 'Cálculo Mental',
       '/secret': '???',
+      '/digitalremains': '???',
     };
 
     // Aplicamos el título o uno por defecto si no existe en la lista
@@ -265,6 +267,7 @@ function App() {
         <Route path="/cuestionario" element={<Cuestionario />} />
         <Route path="/calculo" element={<CalculoMental />} />
         <Route path="/secret" element={<Secret />} />
+        <Route path="/digitalremains" element={<DigitalR />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
