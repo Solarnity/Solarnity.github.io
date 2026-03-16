@@ -58,47 +58,18 @@ const DigitalR = () => {
         <div className="flex items-center justify-center min-h-screen p-4">
           <div className="text-center max-w-4xl mx-auto">
 
-            {/* Contador en tiempo real */}
-            <div className="font-mono grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 bg-black/40 rounded-lg p-4 md:p-6 border border-white/20 shadow-2xl">
+            {/* Contador en tiempo real - Formato horizontal para todos los tamaños */}
+            <div className="font-mono bg-black/40 rounded-lg p-6 md:p-8 border border-white/20 shadow-2xl">
               
-              {/* Días */}
-              <div>
-                <div className="text-5xl md:text-7xl font-bold mb-2">
-                  {String(timeLeft.days).padStart(2, '0')}
-                </div>
-                <div className="text-sm md:text-base uppercase tracking-wider opacity-80">
-                  Días
-                </div>
-              </div>
-
-              {/* Horas */}
-              <div>
-                <div className="text-5xl md:text-7xl font-bold mb-2">
-                  {String(timeLeft.hours).padStart(2, '0')}
-                </div>
-                <div className="text-sm md:text-base uppercase tracking-wider opacity-80">
-                  Horas
-                </div>
-              </div>
-
-              {/* Minutos */}
-              <div>
-                <div className="text-5xl md:text-7xl font-bold mb-2">
-                  {String(timeLeft.minutes).padStart(2, '0')}
-                </div>
-                <div className="text-sm md:text-base uppercase tracking-wider opacity-80">
-                  Minutos
-                </div>
-              </div>
-
-              {/* Segundos - Estos se actualizan cada segundo */}
-              <div>
-                <div className="text-5xl md:text-7xl font-bold mb-2">
-                  {String(timeLeft.seconds).padStart(2, '0')}
-                </div>
-                <div className="text-sm md:text-base uppercase tracking-wider opacity-80">
-                  Segundos
-                </div>
+              {/* Formato horizontal con dos puntos - visible en todos los tamaños */}
+              <div className="flex flex-row items-center justify-center gap-1 md:gap-2">
+                <span className="text-5xl md:text-7xl lg:text-8xl font-bold">{String(timeLeft.days).padStart(2, '0')}</span>
+                <span className="text-5xl md:text-7xl lg:text-8xl font-bold">:</span>
+                <span className="text-5xl md:text-7xl lg:text-8xl font-bold">{String(timeLeft.hours).padStart(2, '0')}</span>
+                <span className="text-5xl md:text-7xl lg:text-8xl font-bold">:</span>
+                <span className="text-5xl md:text-7xl lg:text-8xl font-bold">{String(timeLeft.minutes).padStart(2, '0')}</span>
+                <span className="text-5xl md:text-7xl lg:text-8xl font-bold">:</span>
+                <span className="text-5xl md:text-7xl lg:text-8xl font-bold">{String(timeLeft.seconds).padStart(2, '0')}</span>
               </div>
             </div>
           </div>
