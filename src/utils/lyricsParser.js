@@ -1,5 +1,3 @@
-// utils/lyricsParser.js
-
 // Parseador de archivos .lrc
 export function parseLRC(text) {
   const lines = text.split(/\r?\n/);

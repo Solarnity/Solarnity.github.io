@@ -322,7 +322,7 @@ function LPC() {
           backdrop-contrast-95
         `}
       />
-      <div className='flex flex-col lg:flex-row min-h-screen text-white gap-0 relative'>
+      <div className='flex flex-col lg:flex-row min-h-screen text-white gap-0 relative pt-12'>
         <audio ref={audioRef} />
         {/* Player 50% en desktop, 100% en móvil */}
         <div className='w-full lg:w-1/2 flex flex-col h-auto lg:h-screen justify-center items-center px-4 lg:px-8 py-4 lg:py-8 order-2 lg:order-1'>

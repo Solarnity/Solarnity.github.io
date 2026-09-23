@@ -41,7 +41,6 @@ const Cuestionario = () => {
   const renderContent = (text) => {
     if (typeof text !== "string") return text;
 
-    // Split por marcadores de código y matemáticas usando regex
     const parts = text.split(
       /(\[INICIO_CODIGO\][\s\S]*?\[FIN_CODIGO\]|\[INICIO_MAT\][\s\S]*?\[FIN_MAT\])/g,
     );
@@ -204,7 +203,7 @@ const Cuestionario = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white text-black font-mono p-4 overflow-hidden">
+    <div className="h-screen flex flex-col bg-white text-black font-mono p-4 pt-16 overflow-hidden">
       {mostrarContenido && (
         <header className="mb-2 pb-2 border-b border-black flex justify-between items-center">
           <div className="flex items-center gap-3">
@@ -235,7 +234,6 @@ const Cuestionario = () => {
       )}
 
       <main className="flex-1 flex flex-col gap-2 min-h-0">
-        {/* Pantalla de inicio - Solo visible cuando NO hay contenido cargado */}
         {!mostrarContenido && !cargando && (
           <div className="flex-1 flex items-center justify-center">
             <div className="w-full max-w-2xl border border-black p-6 md:p-8">
@@ -271,7 +269,6 @@ const Cuestionario = () => {
                   className="hidden"
                 />
 
-                {/* Instrucciones del formato JSON */}
                 <div className="mt-8 text-left border-t border-black pt-6">
                   <h3 className="text-lg font-bold mb-3 text-center">
                     ESPECIFICACIONES DEL FORMATO
@@ -356,7 +353,7 @@ const Cuestionario = () => {
                         </p>
                       </div>
                       <a
-                        href="../../public/python_cuestionario.json"
+                        href="/files/python_cuestionario.json"
                         download="PLANTILLA_CUESTIONARIO.json"
                         className="btn btn-xs rounded-none bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors"
                       >

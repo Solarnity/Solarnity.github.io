@@ -1,4 +1,4 @@
-import SmokeBackground from "../effects/SmokeBackground";
+import SmokeBackground from "../components/Effects/SmokeBackground";
 import { Link } from "react-router";
 
 const NotFound = () => {

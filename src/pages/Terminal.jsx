@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Routes, Route } from "react-router";
 import { DATA } from '../data/terminalData';
-import { VigenereCipher } from '../effects/VigenereCipher';
+import { VigenereCipher } from '../utils/vigenereCipher';
 
 const Terminal = () => {
   const [secretKey, setSecretKey] = useState("...");
@@ -37,7 +37,7 @@ const Terminal = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-white text-black font-mono p-6 selection:bg-black selection:text-white text-[140%]">
+    <div className="h-screen flex flex-col bg-white text-black font-mono p-6 pt-16 selection:bg-black selection:text-white text-[140%]">
       
       <header className="flex-shrink-0 mb-6 pb-3 border-b border-black">
         <Link className="text-2xl font-bold tracking-tight" to="/">

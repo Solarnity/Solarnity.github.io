@@ -1,0 +1,5759 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+public/
+  noise/
+    1.gif
+    2.gif
+    3.gif
+  404.html
+  Flower.ico
+  grunge.jpg
+  Infernus.ico
+  python_cuestionario.json
+  smoke.webp
+  texture.png
+src/
+  components/
+    LPC/
+      Lyrics.jsx
+      Player.jsx
+      Playlist.jsx
+    Riddle/
+      InkText.jsx
+      RiddleMedia.jsx
+      SilkBackground.jsx
+  data/
+    riddleLevels.js
+    terminalData.js
+  effects/
+    BuzzText.jsx
+    DistortedImage.jsx
+    SmokeBackground.jsx
+  pages/
+    CalculoMental.jsx
+    Cuestionario.jsx
+    Digital.jsx
+    LPC.jsx
+    NotFound.jsx
+    Pixels.jsx
+    Secret.jsx
+    Terminal.jsx
+  utils/
+    lyricsParser.js
+    vigenereCipher.js
+  app-routes.js
+  App.jsx
+  index.css
+  main.jsx
+.gitignore
+eslint.config.js
+index.html
+package.json
+README.md
+tailwind.config.js
+vite.config.js
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/components/Riddle/InkText.jsx">
+// src/components/Riddle/InkText.jsx
+import React, { useMemo } from 'react';
+
+export const InkText = ({
+  children,
+  className = '',
+  intensity = 3,          // Fuerza de la deformación principal
+  frequency = 0.05,       // Frecuencia del ruido (0.04–0.08 suele funcionar bien)
+  octaves = 4,            // Niveles de detalle del ruido
+  bleed = 2,              // Cantidad extra de sangrado (se suma a intensity)
+  color = 'currentColor',
+  paperTexture = false,
+}) => {
+  // ID único por combinación de parámetros
+  const filterId = useMemo(
+    () => `ink-bleed-${intensity}-${frequency}-${octaves}-${bleed}`,
+    [intensity, frequency, octaves, bleed]
+  );
+
+  return (
+    <>
+      {/* Filtro SVG oculto */}
+      <svg className="hidden" aria-hidden="true">
+        <defs>
+          <filter
+            id={filterId}
+            x="-10%"   // Evita recortes por desplazamiento
+            y="-10%"
+            width="120%"
+            height="120%"
+          >
+            {/* Generación de ruido fractal */}
+            <feTurbulence
+              type="fractalNoise"
+              baseFrequency={frequency}
+              numOctaves={octaves}
+              result="noise"
+            />
+
+            {/* Texto principal deformado */}
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale={intensity}
+              xChannelSelector="R"
+              yChannelSelector="G"
+              result="displaced"
+            />
+
+            {/* Capa de sangrado: mayor desplazamiento + desenfoque */}
+            <feDisplacementMap
+              in="SourceGraphic"
+              in2="noise"
+              scale={intensity + bleed}
+              xChannelSelector="R"
+              yChannelSelector="G"
+              result="bleedDisplaced"
+            />
+            <feGaussianBlur
+              in="bleedDisplaced"
+              stdDeviation="1.5"
+              result="bleedBlur"
+            />
+
+            {/* Mezcla final: sangrado detrás del texto principal */}
+            <feMerge>
+              <feMergeNode in="bleedBlur" />
+              <feMergeNode in="displaced" />
+            </feMerge>
+          </filter>
+        </defs>
+      </svg>
+
+      <span
+        className={`tracking-wide ${className}`}
+        style={{
+          filter: `url(#${filterId})`,
+          color,
+          // Textura de papel opcional (punteado sutil)
+          ...(paperTexture && {
+            backgroundImage:
+              'radial-gradient(circle, rgba(0,0,0,0.03) 1px, transparent 1px)',
+            backgroundSize: '4px 4px',
+          }),
+        }}
+      >
+        {children}
+      </span>
+    </>
+  );
+};
+</file>
+
+<file path="src/components/Riddle/RiddleMedia.jsx">
+// src/components/Riddle/RiddleMedia.jsx
+export const RiddleMedia = ({ media }) => {
+  if (!media) return null;
+
+  return (
+    <div className="my-6 w-full max-w-xl mx-auto rounded-lg overflow-hidden border border-[#e23f31]/30 bg-black/40 backdrop-blur-md p-2">
+      {media.type === "image" && (
+        <img src={media.src} alt="Pista" className="w-full h-auto object-cover rounded" />
+      )}
+      {media.type === "audio" && (
+        <audio controls className="w-full filter invert opacity-80">
+          <source src={media.src} type="audio/mpeg" />
+          Tu navegador no soporta el elemento de audio.
+        </audio>
+      )}
+      {media.type === "video" && (
+        <video controls className="w-full h-auto rounded">
+          <source src={media.src} type="video/mp4" />
+        </video>
+      )}
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/Riddle/SilkBackground.jsx">
+/* eslint-disable react/no-unknown-property */
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { forwardRef, useRef, useMemo, useLayoutEffect, useEffect } from 'react';
+import { Color } from 'three';
+
+const hexToNormalizedRGB = hex => {
+  hex = hex.replace('#', '');
+  return [
+    parseInt(hex.slice(0, 2), 16) / 255,
+    parseInt(hex.slice(2, 4), 16) / 255,
+    parseInt(hex.slice(4, 6), 16) / 255
+  ];
+};
+
+const vertexShader = `
+varying vec2 vUv;
+varying vec3 vPosition;
+
+void main() {
+  vPosition = position;
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const fragmentShader = `
+varying vec2 vUv;
+varying vec3 vPosition;
+
+uniform float uTime;
+uniform vec3  uColor;
+uniform float uSpeed;
+uniform float uScale;
+uniform float uRotation;
+uniform float uNoiseIntensity;
+uniform float uLightMode;
+
+const float e = 2.71828182845904523536;
+
+float noise(vec2 texCoord) {
+  float G = e;
+  vec2  r = (G * sin(G * texCoord));
+  return fract(r.x * r.y * (1.0 + texCoord.x));
+}
+
+vec2 rotateUvs(vec2 uv, float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  mat2  rot = mat2(c, -s, s, c);
+  return rot * uv;
+}
+
+void main() {
+  float rnd        = noise(gl_FragCoord.xy);
+  vec2  uv         = rotateUvs(vUv * uScale, uRotation);
+  vec2  tex        = uv * uScale;
+  float tOffset    = uSpeed * uTime;
+
+  tex.y += 0.03 * sin(8.0 * tex.x - tOffset);
+
+  float pattern = 0.6 +
+                  0.4 * sin(5.0 * (tex.x + tex.y +
+                                   cos(3.0 * tex.x + 5.0 * tex.y) +
+                                   0.02 * tOffset) +
+                           sin(20.0 * (tex.x + tex.y - 0.1 * tOffset)));
+
+  float grain = rnd / 15.0 * uNoiseIntensity;
+  vec3 result = uColor * pattern - vec3(grain);
+if (uLightMode > 0.5) {
+  float fold = smoothstep(0.28, 0.9, pattern);
+  float specular = smoothstep(0.72, 0.98, pattern);
+  vec3 shadowColor = uColor * 0.72;
+  vec3 bodyColor = min(uColor * 1.18, vec3(1.0));
+  vec3 lightBase = mix(shadowColor, bodyColor, fold);
+  lightBase = mix(lightBase, vec3(1.0), specular * 0.92);
+  float fineNoise = noise(gl_FragCoord.xy * 0.63 + vec2(17.0, 41.0));
+  float grainSignal = (rnd + fineNoise - 1.0);
+  float grainStrength = clamp(uNoiseIntensity * 0.038, 0.0, 0.16);
+  result = lightBase + grainSignal * grainStrength;
+}
+  gl_FragColor = vec4(clamp(result, 0.0, 1.0), 1.0);
+}
+`;
+
+const SilkPlane = forwardRef(function SilkPlane({ uniforms }, ref) {
+  const { viewport } = useThree();
+
+  useLayoutEffect(() => {
+    if (ref.current) {
+      ref.current.scale.set(viewport.width, viewport.height, 1);
+    }
+  }, [ref, viewport]);
+
+  useFrame((_, delta) => {
+    ref.current.material.uniforms.uTime.value += 0.1 * delta;
+  });
+
+  return (
+    <mesh ref={ref}>
+      <planeGeometry args={[1, 1, 1, 1]} />
+      <shaderMaterial uniforms={uniforms} vertexShader={vertexShader} fragmentShader={fragmentShader} />
+    </mesh>
+  );
+});
+SilkPlane.displayName = 'SilkPlane';
+
+const Silk = ({ speed = 5, scale = 1, color = '#7B7481', noiseIntensity = 1.5, rotation = 0, lightMode = false }) => {
+  const meshRef = useRef();
+
+  const uniforms = useMemo(
+    () => ({
+      uSpeed: { value: speed },
+      uScale: { value: scale },
+      uNoiseIntensity: { value: noiseIntensity },
+      uColor: { value: new Color(...hexToNormalizedRGB(color)) },
+      uRotation: { value: rotation },
+      uLightMode: { value: lightMode ? 1 : 0 },
+      uTime: { value: 0 }
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  useEffect(() => {
+    uniforms.uSpeed.value = speed;
+    uniforms.uScale.value = scale;
+    uniforms.uNoiseIntensity.value = noiseIntensity;
+    uniforms.uColor.value.setRGB(...hexToNormalizedRGB(color));
+    uniforms.uRotation.value = rotation;
+    uniforms.uLightMode.value = lightMode ? 1 : 0;
+  }, [speed, scale, noiseIntensity, color, rotation, lightMode, uniforms]);
+
+  return (
+    <Canvas dpr={[1, 2]} frameloop="always">
+      <SilkPlane ref={meshRef} uniforms={uniforms} />
+    </Canvas>
+  );
+};
+
+export default Silk;
+</file>
+
+<file path="src/data/riddleLevels.js">
+// src/data/riddleLevels.js
+export const RIDDLE_LEVELS = [
+  {
+    id: 1,
+    title: "NIVEL 01 // EL INICIO",
+    clue: "Busca en el espectro del silencio.",
+    media: { type: "image", src: "https://i.imgur.com/9ICyO.png" },
+    // "SUCCESS_TOKEN_1" cifrado con la clave "CLANCY"
+    encryptedSuccessToken: "U[TXHV[S\X_S\Q1", 
+  },
+  {
+    id: 2,
+    title: "NIVEL 02 // FRECUENCIA",
+    clue: "Escucha con atención los microsegundos 0:12.",
+    media: { type: "audio", src: "/assets/clues/level2.mp3" },
+    encryptedSuccessToken: "...", 
+  },
+  // ... Hasta completar los 21 niveles
+];
+</file>
+
+<file path="src/pages/Digital.jsx">
+// src/pages/RiddleGame.jsx
+import { useState } from "react";
+import Silk from "../components/Riddle/SilkBackground";
+import { InkText } from "../components/Riddle/InkText";
+import { RiddleMedia } from "../components/Riddle/RiddleMedia";
+import { RIDDLE_LEVELS } from "../data/riddleLevels";
+import { VigenereCipher } from "../utils/vigenereCipher"; // Asegúrate de exportar la función desde ese archivo
+
+export default function Digital() {
+  const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
+  const [userInput, setUserInput] = useState("");
+  const [error, setError] = useState(false);
+
+  const level = RIDDLE_LEVELS[currentLevelIdx];
+  const totalLevels = RIDDLE_LEVELS.length;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Usamos VigenereCipher con decrypt = true
+    const decrypted = VigenereCipher(level.encryptedSuccessToken, userInput, true);
+
+    if (decrypted.includes(`SUCCESS_TOKEN_${level.id}`)) {
+      setError(false);
+      setUserInput("");
+      if (currentLevelIdx + 1 < totalLevels) {
+        setCurrentLevelIdx((prev) => prev + 1);
+      } else {
+        alert("🎉 ¡Has completado los 21 niveles!");
+      }
+    } else {
+      setError(true);
+      // Pequeño efecto de sacudida en el input (opcional)
+    }
+  };
+
+  // Calcular progreso
+  const progress = ((currentLevelIdx + 1) / totalLevels) * 100;
+
+  return (
+    <div className="relative min-h-screen w-full bg-[#0b0b1a] text-white flex flex-col items-center justify-center p-4 overflow-hidden">
+      {/* Fondo Silk con opacidad reducida para resaltar el glass */}
+      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+        <Silk
+          speed={1.7}
+          scale={0.8}
+          color="#e23f31"      // Cambio a un violeta más moderno
+          noiseIntensity={2.7}
+          rotation={0}
+        />
+      </div>
+
+      {/* Contenedor principal con efecto glass */}
+      <main className="relative z-10 w-full max-w-2xl
+                      bg-white/5 backdrop-blur-xl
+                      border border-white/10
+                      rounded-2xl p-8
+                      shadow-[0_8px_32px_rgba(0,0,0,0.6)]
+                      transition-all duration-500
+                      hover:shadow-[0_8px_48px_rgba(108,60,224,0.3)]">
+        
+        {/* Cabecera con título y progreso */}
+        <header className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+          <div>
+            <InkText
+              className="text-3xl font-bold tracking-widest bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent"
+              intensity={3}
+              bleed={2}
+              frequency={0.05}
+            >
+              {level.title}
+            </InkText>
+            <p className="text-xs text-gray-400/80 mt-1 uppercase tracking-wider">
+              Nivel {level.id} / {totalLevels}
+            </p>
+          </div>
+          <div className="w-20 h-2 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </header>
+
+        {/* Pista y media */}
+        <section className="text-center my-6 space-y-4">
+          <InkText
+            className="text-lg text-gray-200/90"
+            intensity={2}
+            bleed={1.5}
+            frequency={0.06}
+          >
+            {level.clue}
+          </InkText>
+          <RiddleMedia media={level.media} />
+        </section>
+
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="mt-8 flex flex-col items-center gap-4">
+          <div className="w-full max-w-md relative">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => {
+                setUserInput(e.target.value);
+                if (error) setError(false);
+              }}
+              placeholder="Introduce la clave..."
+              className={`
+                w-full px-5 py-3
+                bg-white/5 backdrop-blur-sm
+                border rounded-xl
+                text-white placeholder-gray-400/60
+                focus:outline-none focus:ring-2
+                transition-all duration-300
+                ${error
+                  ? "border-red-500/80 focus:ring-red-500/50 animate-shake"
+                  : "border-white/20 focus:border-purple-400 focus:ring-purple-400/40"
+                }
+              `}
+            />
+            {error && (
+              <p className="absolute -bottom-6 left-0 text-xs text-red-400 font-mono animate-pulse">
+                ⚠️ ACCESO DENEGADO — Clave incorrecta
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className="
+              px-10 py-3
+              bg-gradient-to-r from-purple-600 to-blue-600
+              hover:from-purple-500 hover:to-blue-500
+              text-white font-bold uppercase tracking-widest text-sm
+              rounded-xl
+              shadow-[0_4px_20px_rgba(108,60,224,0.4)]
+              hover:shadow-[0_8px_30px_rgba(108,60,224,0.6)]
+              transition-all duration-300
+              transform hover:scale-105 active:scale-95
+            "
+          >
+            Enviar
+          </button>
+        </form>
+
+        {/* Mensaje de éxito (opcional) */}
+        {!error && userInput && (
+          <p className="mt-4 text-center text-emerald-400 text-sm font-mono animate-fade-in">
+            🔓 Clave aceptada
+          </p>
+        )}
+      </main>
+    </div>
+  );
+}
+</file>
+
+<file path="src/utils/vigenereCipher.js">
+export function VigenereCipher(str, key, decrypt = false) {
+  if (!str || !key) return str;
+  const keyStr = key.toLowerCase().replace(/[^a-z]/g, "");
+  if (keyStr.length === 0) return str;
+
+  let keyIndex = 0;
+  return str.split('').map(char => {
+    if (char.match(/[a-z]/i)) {
+      const isUpperCase = char === char.toUpperCase();
+      const code = char.toLowerCase().charCodeAt(0) - 97;
+      const keyCode = keyStr[keyIndex % keyStr.length].charCodeAt(0) - 97;
+      
+      let newCode = decrypt 
+        ? (code - keyCode + 26) % 26 
+        : (code + keyCode) % 26;
+
+      keyIndex++;
+      const resultChar = String.fromCharCode(newCode + 97);
+      return isUpperCase ? resultChar.toUpperCase() : resultChar;
+    }
+    return char;
+  }).join('');
+};
+</file>
+
+<file path="public/404.html">
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>&lt; 🎕 &gt;</title>
+    <script type="text/javascript">
+      // Segmentos a mantener: 0 porque estamos en la raíz (solarnity.github.io/)
+      var pathSegmentsToKeep = 0; 
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
+</file>
+
+<file path="public/python_cuestionario.json">
+{
+  "preguntas": [
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nmy_list = [1, 2]\n\nfor v in range(2):\n    my_list.insert(-1, my_list[v])\n\nprint(my_list)\n[FIN_CODIGO]",
+      "opciones": [
+        "[2, 1, 1, 2]",
+        "[1, 2, 2, 2]",
+        "[1, 1, 1, 2]",
+        "[1, 2, 1, 2]"
+      ],
+      "respuesta_correcta": "[1, 1, 1, 2]",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "El significado de un argumento posicional está determinado por:",
+      "opciones": [
+        "su posición dentro de la lista de argumentos",
+        "su conexión con variables existentes",
+        "el nombre del argumento especificado junto con su valor",
+        "su valor"
+      ],
+      "respuesta_correcta": "su posición dentro de la lista de argumentos",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuáles de los siguientes enunciados son verdaderos respecto al código?\n[INICIO_CODIGO]\nnums = [1, 2, 3]\nvals = nums\n[FIN_CODIGO]",
+      "opciones": [
+        "vals es más larga que nums",
+        "nums y vals son listas diferentes",
+        "nums tiene la misma longitud que vals",
+        "nums y vals son diferentes nombres de la misma lista"
+      ],
+      "respuesta_correcta": ["nums tiene la misma longitud que vals", "nums y vals son diferentes nombres de la misma lista"],
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "Un operador capaz de verificar si dos valores no son iguales se codifica como:",
+      "opciones": [
+        "not ==",
+        "=/=",
+        "!=",
+        "<>"
+      ],
+      "respuesta_correcta": "!=",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "El siguiente fragmento de código:\n[INICIO_CODIGO]\ndef function_1(a):\n    return None\n\ndef function_2(a):\n    return function_1(a) * function_1(a)\n\nprint(function_2(2))\n[FIN_CODIGO]",
+      "opciones": [
+        "dará como salida 2",
+        "provocará un error de ejecución",
+        "dará como salida 4",
+        "dará como salida 16"
+      ],
+      "respuesta_correcta": "provocará un error de ejecución",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "El resultado de la siguiente división:\n[INICIO_CODIGO]\n1 // 2\n[FIN_CODIGO]",
+      "opciones": [
+        "es igual a 0.5",
+        "es igual a 0.0",
+        "no se puede predecir",
+        "es igual a 0"
+      ],
+      "respuesta_correcta": "es igual a 0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "El siguiente fragmento de código:\n[INICIO_CODIGO]\ndef func(a, b):\n    return b ** a\n\nprint(func(b=2, 2))\n[FIN_CODIGO]",
+      "opciones": [
+        "dará como salida 2",
+        "es erróneo",
+        "dará como salida None",
+        "dará como salida 4"
+      ],
+      "respuesta_correcta": "es erróneo",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Qué valor se asignará a la variable x?\n[INICIO_CODIGO]\nz = 0\ny = 10\nx = y < z and z > y or y < z and z < y\n[FIN_CODIGO]",
+      "opciones": [
+        "1",
+        "0",
+        "True",
+        "False"
+      ],
+      "respuesta_correcta": "False",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuáles de los siguientes nombres de variable son ilegales y provocarán una excepción de SyntaxError?",
+      "opciones": [
+        "print",
+        "In",
+        "in",
+        "for"
+      ],
+      "respuesta_correcta": ["in", "for"],
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nmy_list = [x * x for x in range(5)]\n\ndef fun(lst):\n    del lst[lst[2]]\n    return lst\n\nprint(fun(my_list))\n[FIN_CODIGO]",
+      "opciones": [
+        "[0, 1, 9, 16]",
+        "[1, 4, 9, 16]",
+        "[0, 1, 4, 9]",
+        "[0, 1, 4, 16]"
+      ],
+      "respuesta_correcta": "[0, 1, 4, 9]",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nx = 1\ny = 2\nx, y, z = x, x, y\nz, y, z = x, y, z\n\nprint(x, y, z)\n[FIN_CODIGO]",
+      "opciones": [
+        "1 1 2",
+        "1 2 1",
+        "1 2 2",
+        "2 1 2"
+      ],
+      "respuesta_correcta": "1 1 2",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\na = 1\nb = 0\na = a ^ b\nb = a ^ b\na = a ^ b\n\nprint(a, b)\n[FIN_CODIGO]",
+      "opciones": [
+        "0 1",
+        "1 0",
+        "1 1",
+        "0 0"
+      ],
+      "respuesta_correcta": "0 1",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndef fun(x):\n    if x % 2 == 0:\n        return 1\n    else:\n        return 2\n\nprint(fun(fun(2)))\n[FIN_CODIGO]",
+      "opciones": [
+        "None",
+        "1",
+        "el código provocará un error de ejecución",
+        "2"
+      ],
+      "respuesta_correcta": "2",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "Observa el fragmento de código y elige la sentencia verdadera:\n[INICIO_CODIGO]\nnums = [1, 2, 3]\nvals = nums\ndel vals[:]\n[FIN_CODIGO]",
+      "opciones": [
+        "el código provocará un error de ejecución",
+        "vals es más larga que nums",
+        "nums es más larga que vals",
+        "nums y vals tienen la misma longitud"
+      ],
+      "respuesta_correcta": "nums y vals tienen la misma longitud",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código si el usuario ingresa dos líneas que contienen 3 y 2 respectivamente?\n[INICIO_CODIGO]\nx = int(input())\ny = int(input())\nx = x % y\nx = x % y\ny = y % x\nprint(y)\n[FIN_CODIGO]",
+      "opciones": [
+        "0",
+        "3",
+        "1",
+        "2"
+      ],
+      "respuesta_correcta": "0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código si el usuario ingresa dos líneas que contienen 3 y 6 respectivamente?\n[INICIO_CODIGO]\ny = input()\nx = input()\nprint(x + y)\n[FIN_CODIGO]",
+      "opciones": [
+        "36",
+        "63",
+        "6",
+        "3"
+      ],
+      "respuesta_correcta": "63",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nprint(\"a\", \"b\", \"c\", sep=\"sep\")\n[FIN_CODIGO]",
+      "opciones": [
+        "a b c",
+        "asepbsepcsep",
+        "asepbsepc",
+        "abc"
+      ],
+      "respuesta_correcta": "asepbsepc",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\nx = 1 // 5 + 1 / 5\nprint(x)\n[FIN_CODIGO]",
+      "opciones": [
+        "0.4",
+        "0.5",
+        "0.2",
+        "0"
+      ],
+      "respuesta_correcta": "0.2",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "Suponiendo que my_tuple es una tupla creada correctamente, el hecho de que las tuplas sean inmutables significa que la siguiente instrucción:\n[INICIO_CODIGO]\nmy_tuple[1] = my_tuple[1] + my_tuple[0]\n[FIN_CODIGO]",
+      "opciones": [
+        "puede ser ilegal si la tupla contiene cadenas",
+        "es ilegal",
+        "es completamente correcta",
+        "se puede ejecutar si y solo si la tupla contiene al menos dos elementos"
+      ],
+      "respuesta_correcta": "es ilegal",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código si el usuario ingresa dos líneas que contienen 2 y 4 respectivamente?\n[INICIO_CODIGO]\nx = float(input())\ny = float(input())\nprint(y ** (1 / x))\n[FIN_CODIGO]",
+      "opciones": [
+        "1.0",
+        "2.0",
+        "4.2",
+        "0.0"
+      ],
+      "respuesta_correcta": "2.0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndct = {'one': 'two', 'three': 'one', 'two': 'three'}\nv = dct['three']\n\nfor k in range(len(dct)):\n    v = dct[v]\n\nprint(v)\n[FIN_CODIGO]",
+      "opciones": [
+        "two",
+        "three",
+        "one",
+        "('one', 'two', 'three')"
+      ],
+      "respuesta_correcta": "one",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuántos elementos contiene la lista lst?\n[INICIO_CODIGO]\nlst = [i for i in range(-1, -2)]\n[FIN_CODIGO]",
+      "opciones": [
+        "tres",
+        "dos",
+        "cero",
+        "uno"
+      ],
+      "respuesta_correcta": "cero",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuáles de las siguientes líneas correctamente invocan la función definida a continuación?\n[INICIO_CODIGO]\ndef fun(a, b, c=0):\n    # Cuerpo de la función.\n[FIN_CODIGO]",
+      "opciones": [
+        "fun()",
+        "fun(b=1)",
+        "fun(b=0, a=0)",
+        "fun(0, 1, 2)"
+      ],
+      "respuesta_correcta": ["fun(b=0, a=0)", "fun(0, 1, 2)"],
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndef fun(x, y):\n    if x == y:\n        return x\n    else:\n        return fun(x, y-1)\n\nprint(fun(0, 3))\n[FIN_CODIGO]",
+      "opciones": [
+        "1",
+        "0",
+        "2",
+        "el código provocará un error de ejecución"
+      ],
+      "respuesta_correcta": "0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuántos (*) imprimirá el siguiente fragmento de código en la consola?\n[INICIO_CODIGO]\ni = 0\nwhile i < i + 2 :\n    i += 1\n    print(\"*\")\nelse:\n    print(\"*\")\n[FIN_CODIGO]",
+      "opciones": [
+        "el fragmento entrará en un bucle infinito, imprimiendo un * por línea",
+        "0",
+        "1",
+        "2"
+      ],
+      "respuesta_correcta": "el fragmento entrará en un bucle infinito, imprimiendo un * por línea",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ntup = (1, 2, 4, 8)\ntup = tup[-2:-1]\ntup = tup[-1]\nprint(tup)\n[FIN_CODIGO]",
+      "opciones": [
+        "(4,)",
+        "44",
+        "4",
+        "(4)"
+      ],
+      "respuesta_correcta": "4",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndd = {\"1\": \"0\", \"0\": \"1\"}\nfor x in dd.vals():\n    print(x, end=\"\")\n[FIN_CODIGO]",
+      "opciones": [
+        "0 1",
+        "0 0",
+        "el código es erróneo (el objeto dict no contiene el método vals())",
+        "1 0"
+      ],
+      "respuesta_correcta": "el código es erróneo (el objeto dict no contiene el método vals())",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndct = {}\ndct['1'] = (1, 2)\ndct['2'] = (2, 1)\n\nfor x in dct.keys():\n    print(dct[x][1], end=\"\")\n[FIN_CODIGO]",
+      "opciones": [
+        "(2,1)",
+        "(1,2)",
+        "12",
+        "21"
+      ],
+      "respuesta_correcta": "21",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el resultado del siguiente fragmento de código?\n[INICIO_CODIGO]\ndef fun(inp=2, out=3):\n    return inp * out\n\nprint(fun(out=2))\n[FIN_CODIGO]",
+      "opciones": [
+        "2",
+        "el fragmento de código es erróneo y provocará un SyntaxError",
+        "6",
+        "4"
+      ],
+      "respuesta_correcta": "4",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuántos (#) imprimirá el siguiente fragmento de código en la consola?\n[INICIO_CODIGO]\nlst = [[x for x in range(3)] for y in range(3)]\n\nfor r in range(3):\n    for c in range(3):\n        if lst[r][c] % 2 != 0:\n            print(\"#\")\n[FIN_CODIGO]",
+      "opciones": [
+        "seis",
+        "tres",
+        "cero",
+        "nueve"
+      ],
+      "respuesta_correcta": "tres",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el comportamiento esperado del siguiente programa si el usuario ingresa 0?\n[INICIO_CODIGO]\ntry:\n    value = input(\"Ingresa un valor: \")\n    print(int(value)/len(value))\nexcept ValueError:\n    print(\"Entrada incorrecta...\")\nexcept ZeroDivisionError:\n    print(\"Entrada erronea...\")\nexcept TypeError:\n    print(\"Entrada muy erronea...\")\nexcept:\n    print(\"¡Buuu!\")\n[FIN_CODIGO]",
+      "opciones": [
+        "Entrada muy errónea...",
+        "1.0",
+        "Entrada errónea...",
+        "¡Buuu!",
+        "Entrada incorrecta...",
+        "0.0"
+      ],
+      "respuesta_correcta": "0.0",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el comportamiento esperado del siguiente programa?\n[INICIO_CODIGO]\ntry:\n    print(5/0)\n    break\nexcept:\n    print(\"Lo siento, algo salió mal...\")\nexcept (ValueError, ZeroDivisionError):\n    print(\"Mala suerte...\")\n[FIN_CODIGO]",
+      "opciones": [
+        "El programa provocará una excepción ValueError y dará como salida el siguiente mensaje: Mala suerte...",
+        "El programa provocará una excepción ZeroDivisionError y dará como salida el siguiente mensaje: Mala suerte...",
+        "El programa provocará una excepción ZeroDivisionError y dará como salida un mensaje de error predeterminado.",
+        "El programa provocará una excepción ValueError y dará como salida un mensaje de error predeterminado.",
+        "El programa generará una excepción y será manejada por el primer bloque except.",
+        "El programa provocará una excepción SyntaxError."
+      ],
+      "respuesta_correcta": "El programa provocará una excepción SyntaxError.",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál es el comportamiento esperado del siguiente programa?\n[INICIO_CODIGO]\nfoo = (1, 2, 3)\nfoo.index(0)\n[FIN_CODIGO]",
+      "opciones": [
+        "El programa provocará una excepción SyntaxError.",
+        "El programa dará como salida un 1 en la pantalla.",
+        "El programa provocará una excepción AttributeError.",
+        "El programa provocará una excepción TypeError.",
+        "El programa provocará una excepción ValueError."
+      ],
+      "respuesta_correcta": "El programa provocará una excepción ValueError.",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Cuál de los siguientes fragmentos muestra la forma correcta de manejar múltiples excepciones en una sola cláusula except?\n[INICIO_CODIGO]\n# A:\nexcept (TypeError, ValueError, ZeroDivisionError):\n    # Algo de código.\n\n# B:\nexcept TypeError, ValueError, ZeroDivisionError:\n    # Algo de código.\n# C:\nexcept: (TypeError, ValueError, ZeroDivisionError)\n    # Algo de código.\n\n# D:\nexcept: TypeError, ValueError, ZeroDivisionError\n    # Algo de código.\n# E:\nexcept (TypeError, ValueError, ZeroDivisionError)\n    # Algo de código.\n\n# F:\nexcept TypeError, ValueError, ZeroDivisionError\n    # Algo de código.\n[FIN_CODIGO]",
+      "opciones": [
+        "D y E",
+        "A y B",
+        "A solamente",
+        "F solamente",
+        "A, C, y D",
+        "B y C"
+      ],
+      "respuesta_correcta": "A solamente",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    },
+    {
+      "pregunta": "¿Qué pasará cuando intentes ejecutar el siguiente código?\n[INICIO_CODIGO]\nprint(¡Hola, Mundo!)\n[FIN_CODIGO]",
+      "opciones": [
+        "El código generará la excepción AttributeError.",
+        "El código generará la excepción TypeError.",
+        "El código generará la excepción ValueError.",
+        "El código generará la excepción SyntaxError.",
+        "El código imprimirá ¡Hola, Mundo! en la consola."
+      ],
+      "respuesta_correcta": "El código generará la excepción SyntaxError.",
+      "puntaje": 1,
+      "dificultad": "Difícil"
+    }
+  ],
+  "reintento_numero": 0
+}
+</file>
+
+<file path="src/effects/BuzzText.jsx">
+import { useRef, useEffect, useState } from 'react';
+
+const BuzzText = ({ 
+  children,
+  as: Tag = 'div', 
+  className = '', 
+  active = true,
+  randomActivation = false,
+  activationInterval = 0,
+  intensity = 0.5,
+  glowDuration = 1000 // Duración del brillo inicial en ms
+}) => {
+  const containerRef = useRef(null);
+  const originalRef = useRef(null);
+  const [isActive, setIsActive] = useState(active);
+  const [showGlow, setShowGlow] = useState(false);
+  const intervalRef = useRef(null);
+  const glowTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    // Configurar activación aleatoria o por intervalo
+    if (randomActivation && activationInterval > 0) {
+      intervalRef.current = setInterval(() => {
+        setIsActive(Math.random() > 0.5);
+      }, activationInterval);
+    } else if (activationInterval > 0) {
+      intervalRef.current = setInterval(() => {
+        setIsActive(prev => !prev);
+      }, activationInterval);
+    } else {
+      setIsActive(active);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (glowTimeoutRef.current) {
+        clearTimeout(glowTimeoutRef.current);
+      }
+    };
+  }, [active, randomActivation, activationInterval]);
+
+  // Efecto para manejar el brillo inicial
+  useEffect(() => {
+    if (isActive) {
+      setShowGlow(true);
+      glowTimeoutRef.current = setTimeout(() => {
+        setShowGlow(false);
+      }, glowDuration);
+    } else {
+      setShowGlow(false);
+    }
+
+    return () => {
+      if (glowTimeoutRef.current) {
+        clearTimeout(glowTimeoutRef.current);
+      }
+    };
+  }, [isActive, glowDuration]);
+
+  // Efecto para aplicar el efecto buzz cuando está activo
+  useEffect(() => {
+    if (!containerRef.current || !isActive) return;
+    
+    // Limpiar cualquier contenido previo
+    while (containerRef.current.firstChild) {
+      containerRef.current.removeChild(containerRef.current.firstChild);
+    }
+    
+    // Calcular valores basados en la intensidad
+    const blurAmount = Math.max(0.5, intensity * 2);
+    const opacityValue = 0.1 + (intensity * 0.4);
+    
+    // Crear capas de texto para el efecto
+    for (let i = 0; i < 3; i++) {
+      const layer = document.createElement('div');
+      layer.innerHTML = originalRef.current.innerHTML;
+      layer.className = 'absolute top-0 left-0 w-full h-full';
+      layer.style.pointerEvents = 'none';
+      
+      // Aplicar diferentes estilos a cada capa
+      if (i === 0) {
+        // Capa de blur rojo
+        layer.style.filter = `blur(${blurAmount}px)`;
+        layer.style.color = `rgba(255, 0, 0, ${opacityValue})`;
+        layer.style.animation = 'blur_30ms_infinite, jerk_50ms_infinite';
+      } else if (i === 1) {
+        // Capa de blur azul
+        layer.style.filter = `blur(${blurAmount}px)`;
+        layer.style.color = `rgba(0, 0, 255, ${opacityValue})`;
+        layer.style.animation = 'blur_30ms_infinite, jerk_50ms_infinite';
+        layer.style.animationDelay = '10ms';
+      } else {
+        // Capa principal (visible)
+        layer.style.color = 'currentColor';
+        if (showGlow) {
+          layer.style.filter = `blur(${blurAmount/2}px)`;
+          layer.style.opacity = '0.8';
+        }
+      }
+      
+      containerRef.current.appendChild(layer);
+    }
+  }, [isActive, intensity, showGlow]);
+
+  return (
+    <Tag className={`buzz-text-container relative inline-block ${className}`}>
+      {/* Contenedor para el contenido original (siempre visible para mantener espacio) */}
+      <div 
+        ref={originalRef} 
+        className="inline-block"
+        style={{ visibility: isActive ? 'hidden' : 'visible' }}
+      >
+        {children}
+      </div>
+      
+      {/* Contenedor para las capas de efecto (visible solo cuando está activo) */}
+      {isActive && (
+        <div 
+          ref={containerRef} 
+          className="absolute top-0 left-0 w-full h-full animate-[jerkwhole_5s_infinite]"
+          style={{ 
+            filter: showGlow ? `brightness(1.5) contrast(1.2)` : 'none',
+            transition: 'filter 300ms ease-out'
+          }}
+        />
+      )}
+    </Tag>
+  );
+};
+
+export default BuzzText;
+</file>
+
+<file path="src/effects/DistortedImage.jsx">
+import React, { useRef, useEffect } from 'react';
+import bgImage from '/bg1.jpg';
+
+const DistortedImage = () => {
+  const canvasRef = useRef(null);
+  const imageRef = useRef(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const image = imageRef.current;
+    
+    // Asegurarse de que la imagen esté cargada
+    image.onload = () => {
+      canvas.width = image.width;
+      canvas.height = image.height;
+      
+      // Función de animación
+      const animate = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const time = Date.now() * 0.005;
+        const amplitude = 25; // Amplitud de las ondas
+        const frequency = 0.002; // Frecuencia de las ondas
+        
+        // Dibujar la imagen con distorsión
+        for (let y = 0; y < canvas.height; y += 2) {
+          // Calcular desplazamiento horizontal usando función seno
+          const displacement = Math.sin(y * frequency + time) * amplitude;
+          
+          // Dibujar una línea horizontal desplazada
+          ctx.drawImage(
+            image,
+            0, y, canvas.width, 1, // Recorte de la imagen original
+            displacement, y, canvas.width, 1 // Posición y tamaño en el canvas
+          );
+        }
+        
+        requestAnimationFrame(animate);
+      };
+      
+      animate();
+    };
+  }, []);
+
+  return (
+    <div className="relative flex justify-center items-center min-h-screen bg-gray-900 p-4">
+      {/* Imagen oculta que usaremos como fuente */}
+      <img 
+        ref={imageRef} 
+        src={bgImage} 
+        alt="Original" 
+        className="hidden"
+        crossOrigin="anonymous"
+      />
+      
+      {/* Canvas donde dibujaremos la imagen distorsionada */}
+      <canvas 
+        ref={canvasRef} 
+        className="border-2 border-blue-400 rounded-lg shadow-2xl"
+      />
+      
+      {/* Efecto de brillo para mejorar el resultado */}
+      <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+        <div className="w-full max-w-4xl h-0 pb-[56.25%] relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-purple-600/10 mix-blend-overlay rounded-lg"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DistortedImage;
+</file>
+
+<file path="src/pages/NotFound.jsx">
+import SmokeBackground from "../effects/SmokeBackground";
+import { Link } from "react-router";
+
+const NotFound = () => {
+  return (
+    <>
+      {/* Fondo de humo y texto */}
+      <div className="fixed inset-0 w-lvw h-lvh z-0 pointer-events-none crt-effect">
+        <div className="fixed md:hidden">
+          <SmokeBackground
+            fadeInOut={true}
+            minOpacity={0.2}
+            maxOpacity={0.5}
+            numParticles={8}
+            direction="left"
+            origin="right"
+            movementIntensity={7}
+          />
+        </div>
+        
+        <div className="hidden md:block">
+          <SmokeBackground
+            fadeInOut={true}
+            minOpacity={0.2}
+            maxOpacity={0.5}
+            numParticles={35}
+            direction="left"
+            origin="right"
+            movementIntensity={10}
+          />
+        </div>
+        
+
+        {/* Efecto de grano */}
+        <img className="fixed overflow-hidden top-0 bottom-0 left-0 right-0 h-lvh w-lvw pointer-events-none z-10 mix-blend-color-dodge opacity-20" alt="background texture" src="/grunge.jpg" />
+      </div>
+
+      <div className="w-full h-full text-almond relative">
+
+        {/* Contenedor principal centrado */}
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <div className="text-center max-w-md">
+            <h2 className="text-xl font-bold mb-2">Página no encontrada</h2>
+            <p className="opacity-90">La página que buscas no existe o no tienes permiso para acceder.</p>
+            <Link to="/" className="btn glass text-almond mt-6">
+              Volver al inicio
+            </Link>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default NotFound;
+</file>
+
+<file path="src/utils/lyricsParser.js">
+// Parseador de archivos .lrc
+export function parseLRC(text) {
+  const lines = text.split(/\r?\n/);
+  return lines.map(line => {
+    // [mm:ss] o [mm:ss.xx]
+    const match = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{2,3}))?\](.*)/);
+    if (match) {
+      const min = parseInt(match[1], 10);
+      const sec = parseInt(match[2], 10);
+      const ms = parseInt(match[3] || "0", 10);
+      return {
+        start: min * 60 + sec + ms / 1000,
+        text: match[4].trim(),
+      };
+    }
+    return null;
+  }).filter(Boolean);
+}
+
+// Parseador de archivos .srt
+export function parseSRT(text) {
+  const blocks = text.split(/\r?\n\r?\n/); // cada bloque
+  return blocks.map(block => {
+    const lines = block.split(/\r?\n/);
+    if (lines.length >= 3) {
+      const timeMatch = lines[1].match(
+        /(\d{2}):(\d{2}):(\d{2}),(\d{3}) --> (\d{2}):(\d{2}):(\d{2}),(\d{3})/
+      );
+      if (timeMatch) {
+        const start =
+          parseInt(timeMatch[1], 10) * 3600 +
+          parseInt(timeMatch[2], 10) * 60 +
+          parseInt(timeMatch[3], 10) +
+          parseInt(timeMatch[4], 10) / 1000;
+        const end =
+          parseInt(timeMatch[5], 10) * 3600 +
+          parseInt(timeMatch[6], 10) * 60 +
+          parseInt(timeMatch[7], 10) +
+          parseInt(timeMatch[8], 10) / 1000;
+
+        const textContent = lines
+          .slice(2)
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        return { start, end, text: textContent };
+      }
+    }
+    return null;
+  }).filter(Boolean);
+}
+</file>
+
+<file path="src/app-routes.js">
+
+</file>
+
+<file path="src/main.jsx">
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+</file>
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="eslint.config.js">
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{js,jsx}'],
+    extends: [
+      js.configs.recommended,
+      reactHooks.configs['recommended-latest'],
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
+      },
+    },
+    rules: {
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    },
+  },
+])
+</file>
+
+<file path="src/components/LPC/Lyrics.jsx">
+// Lyrics.jsx
+import { useEffect, useRef, useState } from "react";
+import { LetterText, MicVocal } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
+export default function Lyrics({ lyrics, progress, onSeek }) {
+  const [activeTab, setActiveTab] = useState("synced");
+  const [currentIdx, setCurrentIdx] = useState(-1);
+  const [prevIdx, setPrevIdx] = useState(-1);
+
+  const currentLineRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const synced = Array.isArray(lyrics?.synced) ? lyrics.synced : [];
+
+  if (!lyrics) return <p className="text-center text-white">Cargando letra...</p>;
+
+  const findCurrentLineIndex = (arr, t) => {
+    if (!arr || arr.length === 0) return -1;
+    let idx = -1;
+    for (let i = 0; i < arr.length; i++) {
+      if (t >= arr[i].time) idx = i;
+      else break;
+    }
+    return idx;
+  };
+
+  // Se mueve la lógica de animación a un solo useEffect
+  useEffect(() => {
+    const idx = findCurrentLineIndex(synced, progress);
+    if (idx !== currentIdx) {
+      setPrevIdx(currentIdx);
+      setCurrentIdx(idx);
+    }
+  }, [progress, synced, currentIdx]);
+
+  // Se centra visualmente la línea actual
+  useEffect(() => {
+    if (currentLineRef.current) {
+      currentLineRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [currentIdx]);
+
+  const BASE = Math.max(0, currentIdx);
+  const STEP = 44;
+
+  const opacityFor = (offset) =>
+    offset === 0 ? 1 : offset === 1 ? 1 : offset === 2 ? 0.75 : offset === 3 ? 0.5 : 0.25;
+
+  return (
+    <div className="w-full max-w-3xl mx-auto p-4 flex flex-col h-full">
+      <div className="tabs mb-4 flex justify-center lg:justify-start">
+        <button
+          className={`tab tab-bordered text-white [--color-base-content:text-white] ${activeTab === "plain" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("plain")}
+        >
+          <LetterText size={18} lg:size={24} />
+        </button>
+        <button
+          className={`tab tab-bordered text-white [--color-base-content:text-white] ${activeTab === "synced" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("synced")}
+        >
+          <MicVocal size={18} lg:size={24} />
+        </button>
+      </div>
+
+      <div className="tab-content flex-1 flex flex-col justify-center h-full">
+        {activeTab === "synced" ? (
+          <div ref={containerRef} className="relative h-[50vh] lg:h-[75vh] overflow-hidden p-4">
+            {synced.length > 0 ? (
+              <AnimatePresence>
+                {[0, 1, 2, 3, 4]
+                  .map((o) => BASE + o)
+                  .filter((i) => i >= 0 && i < synced.length)
+                  .map((i) => {
+                    const offset = i - BASE;
+                    const line = synced[i];
+                    const isMain = offset === 0;
+
+                    return (
+                      <motion.div
+                        ref={isMain ? currentLineRef : null}
+                        key={line.time}
+                        className="absolute left-0 right-0 text-left text-lg lg:text-2xl font-bold"
+                        style={{ top: "35%" }}
+                        initial={{ y: STEP * (offset + 1), opacity: 0 }}
+                        animate={{ y: STEP * offset, opacity: opacityFor(offset) }}
+                        exit={
+                          isMain
+                            ? { y: -STEP, opacity: 0, transition: { duration: 0.5, ease: "easeInOut" } }
+                            : { opacity: 0 }
+                        }
+                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                      >
+                        <span
+                          className={
+                            isMain
+                              ? "text-white"
+                              : offset === 1
+                              ? "text-white/75"
+                              : offset === 2
+                              ? "text-white/50"
+                              : offset === 3
+                              ? "text-white/25"
+                              : "text-white/10"
+                          }
+                        >
+                          {line.text}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+              </AnimatePresence>
+            ) : (
+              <p className="italic text-gray-300 text-center">
+                No hay letra sincronizada para esta canción.
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="h-[50vh] lg:h-[75vh] overflow-y-auto whitespace-pre-wrap text-white text-left p-4 rounded-lg text-sm lg:text-base">
+            {lyrics?.plain === "No se encontró letra para esta canción." ? (
+              <h2 className="italic text-center opacity-75">No se encontró letra para esta canción.</h2>
+            ) : (
+              lyrics?.plain || ""
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+</file>
+
+<file path="src/components/LPC/Playlist.jsx">
+import { useState } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Trash2, ChevronUp, ChevronDown, Plus, AudioLines } from 'lucide-react';
+
+const SortableSong = ({ song, index, currentSongIndex, setCurrentSongIndex, setIsPlaying, removeSong, moveSong, playlistLength }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: song.id });
+  
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`card p-3 lg:p-4 flex flex-row items-center gap-3 lg:gap-4 cursor-pointer transition-all ${
+        index === currentSongIndex ? 'bg-base-100/20 ' : 'hover:bg-base-100/10'
+      }`}
+      onClick={() => {
+        setCurrentSongIndex(index);
+        setIsPlaying(false);
+      }}
+    >
+      <div className="w-10 h-10 lg:w-12 lg:h-12 flex-shrink-0 rounded-md overflow-hidden flex items-center justify-center">
+        {song.coverArt ? (
+          <img src={song.coverArt} alt="Cover Art" className="object-cover w-full h-full" />
+        ) : (
+          <AudioLines size={18} lg:size={24} className="text-green" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className='font-semibold truncate text-sm lg:text-base'>{song.title}</div>
+        <div className='text-xs lg:text-sm opacity-70 truncate'>{song.artist} • {song.album}</div>
+      </div>
+      <div className="flex-shrink-0 flex items-center gap-1">
+        <button
+          className="btn btn-ghost btn-sm btn-square hidden lg:flex"
+          onClick={(e) => { e.stopPropagation(); moveSong(index, index - 1); }}
+          disabled={index === 0}
+        >
+          <ChevronUp size={16} />
+        </button>
+        <button
+          className="btn btn-ghost btn-sm btn-square hidden lg:flex"
+          onClick={(e) => { e.stopPropagation(); moveSong(index, index + 1); }}
+          disabled={index === playlistLength - 1}
+        >
+          <ChevronDown size={16} />
+        </button>
+        <button
+          className="btn btn-ghost btn-sm btn-square"
+          onClick={(e) => { e.stopPropagation(); removeSong(song.id); }}
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const Playlist = ({ playlist, currentSongIndex, setCurrentSongIndex, setIsPlaying, handleFiles, removeSong, moveSong, removeAllSongs}) => {
+  const [isDragActive, setIsDragActive] = useState(false);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragActive(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragActive(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles({ target: { files: e.dataTransfer.files } });
+    }
+  };
+
+  return (
+    <div
+      className={`card w-full bg-transparent shadow-none p-3 lg:p-4 text-white transition-all ${isDragActive ? 'border-2 border-dashed border-white/50' : 'border-2 border-transparent'}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <div className='card-body p-0'>
+        <div className='flex items-center justify-between mb-3 lg:mb-4'>
+          <h2 className='card-title text-lg lg:text-xl'>Lista de Reproducción 
+            {playlist.length > 0 ? (` - ${playlist.length}`) : ( "" )}
+          </h2>
+          <div className='flex gap-2'>
+            {playlist.length > 0 && (
+              <button
+                className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900"
+                onClick={removeAllSongs}
+              >
+                <Trash2 size={18} lg:size={20} />
+              </button>
+            )}
+            <label htmlFor="file-upload" className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50">
+              <Plus size={18} lg:size={20} />
+              <input
+                id='file-upload'
+                type='file'
+                accept='audio/*'
+                multiple
+                onChange={handleFiles}
+                className='hidden'
+              />
+            </label>
+          </div>
+        </div>
+        <div className='space-y-2 overflow-y-auto max-h-[calc(50vh-100px)] lg:max-h-[calc(100vh-250px)]'>
+          {playlist.length > 0 ? (
+            <>
+              {playlist.map((song, index) => (
+                <SortableSong
+                  key={song.id}
+                  song={song}
+                  index={index}
+                  currentSongIndex={currentSongIndex}
+                  setCurrentSongIndex={setCurrentSongIndex}
+                  setIsPlaying={setIsPlaying}
+                  removeSong={removeSong}
+                  moveSong={moveSong}
+                  playlistLength={playlist.length}
+                />
+              ))}
+            </>
+          ) : (
+            <div className='card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all bg-white/10'>
+              <p className='text-center text-sm opacity-50'>Tu lista de reproducción está vacía.</p>
+              <p className='text-center text-xs opacity-50'>Arrastra y suelta archivos aquí.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Playlist;
+</file>
+
+<file path="src/data/terminalData.js">
+export const DATA = [
+  {
+    id: 1,
+    spoiler: true,
+    items: [
+      {
+        id: "1-1",
+        name: "Cómic",
+        added: "2020-08-15",
+      },
+      {
+        id: "1-2",
+        name: "SummonYT",
+        added: "2020-08-15",
+      },
+      {
+        id: "1-3",
+        name: "TwoGamesInTheLife",
+        added: "2020-08-15",
+      },
+      {
+        id: "1-4",
+        name: "alonshot36",
+        added: "2020-08-15",
+      },
+      {
+        id: "1-5",
+        name: "DharKnhesS",
+        added: "2020-08-15",
+      },
+      {
+        id: "1-6",
+        name: "Infernus",
+        added: "2026-02-22",
+      },
+      {
+        id: "1-7",
+        name: "「📺」S5",
+        added: "2026-02-22",
+      }
+    ]
+  },
+  {
+    id: 2,
+    spoiler: true,
+    items: [
+      {
+        id: "2-1",
+        name: "Itadaki🥵",
+        added: "2026-02-22",
+      },
+      {
+        id: "2-2",
+        name: "uWu",
+        added: "2026-02-22",
+      },
+      {
+        id: "2-3",
+        name: "dosicor",
+        added: "2020-08-15",
+      },
+      {
+        id: "2-4",
+        name: "El Juego Maldito: Kincaid",
+        added: "2026-02-22",
+      },
+      {
+        id: "2-5",
+        name: "MAURICIOCRAFT (me lo mandaron x mail)",
+        added: "2026-02-21",
+        link: "https://x.com/mauriciomacri/status/506817804268752896",
+      },
+      {
+        id: "2-6",
+        name: "el pan dice la biblia vale 1500",
+        added: "2020-08-15",
+      },
+      {
+        id: "2-7",
+        name: "Viernes de Dibujos",
+        added: "2020-08-15",
+      },
+      {
+        id: "2-8",
+        name: "platano dorado",
+        added: "2020-08-15",
+      },
+      {
+        id: "2-9",
+        name: "#📛┆errores",
+        added: "2026-02-22",
+      },
+      {
+        id: "2-10",
+        name: "+1000 Screenshots",
+        added: "2020-08-15",
+      },
+      {
+        id: "2-11",
+        name: "Mari Setagaya",
+        added: "2026-02-22",
+        link: "https://i.imgur.com/5u5bp1v.gif",
+      },
+      {
+        id: "2-12",
+        name: "Geometry Dash Universal",
+        added: "2020-08-15",
+      }
+    ]
+  },
+  {
+    id: 3,
+    spoiler: true,
+    items: [
+      {
+        id: "3-1",
+        name: "Lista de Anime",
+        added: "2020-08-15",
+      },
+      {
+        id: "3-2",
+        name: "fLUCK",
+        added: "2026-02-21",
+      },
+            {
+        id: "3-3",
+        name: "Hyper Project",
+        added: "2026-02-22",
+      },
+      {
+        id: "3-4",
+        name: "Za Warudo Tests",
+        added: "2020-08-15",
+      },
+      {
+        id: "3-5",
+        name: "Clubstepfunk",
+        added: "2026-02-22",
+      },
+      {
+        id: "3-6",
+        name: "Theory of Everytime 1 y 2",
+        added: "2026-02-22",
+      },
+      {
+        id: "3-7",
+        name: "Jueves de Retos",
+        added: "2020-08-15",
+      },
+      {
+        id: "3-8",
+        name: "Caja de Libros",
+        added: "2020-08-15",
+      },
+      {
+        id: "3-9",
+        name: "Revolution Dreams",
+        added: "2020-08-15",
+      },
+      {
+        id: "3-10",
+        name: "📽️ jarvis pedilo",
+        added: "2026-02-22",
+        link: "https://youtu.be/G_XeW7P-1hs",
+      },
+      {
+        id: "3-11",
+        name: "Viernes 13 de Abril del 2018 (16:49:19)",
+        added: "2020-08-15",
+      },
+      {
+        id: "3-12",
+        name: "📽️ jaja video 1 no quiero grabar más",
+        added: "2026-02-22",
+        link: "https://youtu.be/r2VidjcAtmw",
+      },
+      {
+        id: "3-13",
+        name: "📽️ Leave The City (Lyric Video)",
+        added: "2026-02-22",
+        link: "https://youtu.be/TkpsWb56G0E",
+      },
+      {
+        id: "3-14",
+        name: "Zarrapastroso",
+        added: "2026-02-22",
+      }
+    ]
+  },
+  {
+    id: 4,
+    spoiler: true,
+    items: [
+      {
+        id: "4-1",
+        name: "conchetumarexdxd.mcserv.me",
+        added: "2020-08-15",
+      },
+      {
+        id: "4-2",
+        name: "Spam Skype.vbs",
+        added: "2020-08-15",
+      },
+      {
+        id: "4-3",
+        name: "La del Trivago",
+        added: "2020-08-15",
+      },
+      {
+        id: "4-4",
+        name: "Ishuzoku Reviewers",
+        added: "2026-02-22",
+      },
+      {
+        id: "4-5",
+        name: "Konoha",
+        added: "2026-02-22",
+      },
+      {
+        id: "4-6",
+        name: "Dios del SPAM",
+        added: "2020-08-15",
+      },
+      {
+        id: "4-7",
+        name: "💿 Infernus Playlist Vol. I",
+        added: "2026-02-22",
+      },
+      {
+        id: "4-8",
+        name: "Piñufla",
+        added: "2020-08-15",
+      },
+      {
+        id: "4-9",
+        name: "Pitbull",
+        added: "2020-08-15",
+      },
+      {
+        id: "4-10",
+        name: "Server Hardcore",
+        added: "2026-02-22",
+      },
+      {
+        id: "4-11",
+        name: "📁 Dragones",
+        added: "2026-02-22",
+        link: "https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbmdpancyYW9jZ2J4dG1uaGt4bmQ2bmd3enJvY3VxbHo2dTlxMmdmOCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/XlNDo114W62dy/giphy.gif",
+      },
+      {
+        id: "4-12",
+        name: "💿 Breach Digital Remains",
+        added: "2026-02-22"
+      },
+      {
+        id: "4-13",
+        name: "The Ultimate Chat",
+        added: "2020-08-15",
+      },
+      {
+        id: "4-14",
+        name: "Proyecto TRCN I y II",
+        added: "2026-02-22"
+      },
+      {
+        id: "4-15",
+        name: "「🔧」RTC Fix",
+        added: "2026-02-22",
+      }
+    ]
+  },
+  {
+    id: 5,
+    spoiler: true,
+    items: [
+      {
+        id: "5-1",
+        name: "📽️ funny",
+        added: "2026-02-22",
+        link: "https://youtu.be/xOXsluXmFY8",
+      },
+      {
+        id: "5-2",
+        name: "💿 DESCARTABLE",
+        added: "2026-02-22",
+      },
+      {
+        id: "5-3",
+        name: "Infernus Beta",
+        added: "2026-02-22",
+      },
+      {
+        id: "5-4",
+        name: "📽️ Classic.mp4",
+        added: "2026-02-22",
+        link: "https://youtu.be/6WRC4Gy2Khg",
+      },
+      {
+        id: "5-5",
+        name: "Kimera07",
+        added: "2020-08-15",
+      },
+      {
+        id: "5-6",
+        name: "(otaku?)",
+        added: "2020-08-15",
+      },
+      {
+        id: "5-7",
+        name: "📽️ Minecraft Minigame Test 1",
+        added: "2026-02-22",
+        link: "https://youtu.be/WAx9CRuE1sE",
+      },
+      {
+        id: "5-8",
+        name: "BANNA",
+        added: "2020-08-15",
+      },
+      {
+        id: "5-9",
+        name: "📽️ A Special Announcement",
+        added: "2026-02-22",
+        link: "https://youtu.be/BSwN7rWFiA0",
+      },
+      {
+        id: "5-10",
+        name: "The Shadow Gamer",
+        added: "2020-08-15",
+      },
+      {
+        id: "5-11",
+        name: "Parkour Time",
+        added: "2026-02-22",
+      },
+      {
+        id: "5-12",
+        name: "Prototipo Primordial Estigio",
+        added: "2026-02-22",
+      },
+      {
+        id: "5-13",
+        name: "Konoha 2",
+        added: "2026-02-22",
+      },
+      {
+        id: "5-14",
+        name: "Móndrigo",
+        added: "2026-02-22",
+      },
+
+    ]
+  },
+  {
+    id: 6,
+    spoiler: true,
+    items: [
+      {
+        id: "6-1",
+        name: "💿 Infernus Playlist Vol. II",
+        added: "2026-02-22",
+      },
+      {
+        id: "6-2",
+        name: "YouTube - r",
+        added: "2026-02-22",
+        link: "https://www.youtube.com/playlist?list=PLt3UFTKMOiIhqX9r-jmRbQhrpuvDiYqrc",
+      },
+      {
+        id: "6-3",
+        name: "📽️ TGlicmVjcmFmdA==",
+        added: "2026-02-22",
+        link: "https://youtu.be/tCDWS_8ngCU",
+      },
+      {
+        id: "6-4",
+        name: "💿 Aethereal Harmony",
+        added: "2026-02-22",
+      },
+      {
+        id: "6-5",
+        name: "Aurora",
+        added: "2026-02-22",
+      },
+      {
+        id: "6-6",
+        name: "💿 Echoes of Tomorrow",
+        added: "2026-02-22",
+      },
+      {
+        id: "6-7",
+        name: "📽️ El reto de la botella (Cae de pie) XD.mp4",
+        added: "2026-02-22",
+        link: "https://www.youtube.com/shorts/07LTIAW1XBU",
+      },
+      {
+        id: "6-8",
+        name: "💿 Clancy Digital Remains",
+        added: "2026-02-22",
+      },
+      {
+        id: "6-9",
+        name: "@StreetFix_",
+        added: "2026-02-22",
+        link: "https://x.com/StreetFix_",
+      },
+      {
+        id: "6-10",
+        name: "「📺」S1 - S8",
+        added: "2026-02-22"
+      },
+      {
+        id: "6-11",
+        name: "Otakos Latino",
+        added: "2026-02-22"
+      },
+      {
+        id: "6-12",
+        name: "Clancy Telepizza",
+        added: "2026-02-22"
+      }
+    ]
+  },
+  {
+    id: 7,
+    spoiler: true,
+    items: [
+      {
+        id: "7-1",
+        name: "📽️ NIVEL 3",
+        added: "2026-02-22",
+        link: "https://youtu.be/fKlKQi-UdLA",
+      },
+      {
+        id: "7-2",
+        name: "📽️ Minecraft Minigame Test 2",
+        added: "2026-02-22",
+      },
+      {
+        id: "7-3",
+        name: "SILENCIA",
+        added: "2026-02-22",
+      },
+      {
+        id: "7-4",
+        name: "📽️ navigating.MOV",
+        added: "2026-02-22",
+      },
+      {
+        id: "7-5",
+        name: "📽️ bandicam 2018 04 08 14 07 46 828.mp4",
+        added: "2026-02-22",
+      },
+      {
+        id: "7-6",
+        name: "📽️ Mi video editado 2 xd",
+        added: "2026-02-22",
+      },
+      {
+        id: "7-7",
+        name: "cómic r",
+        added: "2026-02-22",
+      }
+    ]
+  }
+];
+</file>
+
+<file path="src/effects/SmokeBackground.jsx">
+// src/components/SmokeBackground.jsx
+
+import React, { useEffect, useRef } from "react";
+import smokeImageSource from "/smoke.webp";
+
+const SmokeBackground = ({
+  classes = "bg-gradient-to-r from-chestnut from-20% to-blackbean",
+  smokeColor = "#330B0B",
+  numParticles = 20,
+  minSize = 500,
+  maxSize = 3000,
+  minOpacity = 0.1,
+  maxOpacity = 0.8,
+  minDuration = 10000, // Duración mínima en ms
+  maxDuration = 20000, // Duración máxima en ms
+  rotationSpeed = 0.002,
+  fps = 24,
+  canvasOpacity = 100,
+  enableAnimation = true,
+  direction = "right",
+  origin = "random",
+  movementIntensity = 1.0,
+  fadeInOut = true // Si las partículas deben aparecer y desaparecer suavemente
+}) => {
+  const canvasRef = useRef(null);
+  const particlesRef = useRef([]);
+  const imageRef = useRef(null);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    const fpsInterval = 1000 / fps;
+    let then = Date.now();
+
+    // Verificar si se debe reducir el movimiento
+    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (reducedMotionQuery.matches && !enableAnimation) return;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight + 100;
+    };
+
+    // Función para calcular posición inicial según el origen
+    const getInitialPosition = (canvasWidth, canvasHeight) => {
+      let x, y;
+      
+      switch (origin) {
+        case 'left':
+          x = -canvasWidth * 0.8;
+          y = Math.random() * canvasHeight - canvasHeight / 2;
+          break;
+        case 'right':
+          x = canvasWidth * 0.8;
+          y = Math.random() * canvasHeight - canvasHeight / 2;
+          break;
+        case 'top':
+          x = Math.random() * canvasWidth - canvasWidth / 2;
+          y = -canvasHeight * 0.8;
+          break;
+        case 'bottom':
+          x = Math.random() * canvasWidth - canvasWidth / 2;
+          y = canvasHeight * 0.8;
+          break;
+        case 'center':
+          x = Math.random() * canvasWidth * 0.4 - canvasWidth * 0.2;
+          y = Math.random() * canvasHeight * 0.4 - canvasHeight * 0.2;
+          break;
+        case 'random':
+        default:
+          x = Math.random() * canvasWidth - canvasWidth;
+          y = Math.random() * canvasHeight - canvasHeight / 2;
+          break;
+      }
+      
+      return { x, y };
+    };
+
+    // Clase de partícula con duración y opacidad relacionadas
+    class Particle {
+      constructor(image) {
+        this.image = image;
+        const { x, y } = getInitialPosition(canvas.width, canvas.height);
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * (maxSize - minSize) + minSize;
+        
+        // Duración y opacidad relacionadas
+        this.totalDuration = Math.random() * (maxDuration - minDuration) + minDuration;
+        this.elapsedTime = 0;
+        this.initialOpacity = Math.random() * (maxOpacity - minOpacity) + minOpacity;
+        this.currentOpacity = fadeInOut ? 0 : this.initialOpacity;
+        this.fadeProgress = 0; // 0 a 1 para controlar fade in/out
+        
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = Math.random() * rotationSpeed;
+        this.isAlive = true;
+        
+        // Configurar dirección de movimiento
+        this.setMovementDirection();
+      }
+      
+      setMovementDirection() {
+        // Velocidad base ajustada por intensidad
+        const baseSpeed = 0.5 * movementIntensity;
+        
+        switch (direction) {
+          case 'right':
+            this.speedX = Math.random() * baseSpeed + baseSpeed * 0.5;
+            this.speedY = (Math.random() - 0.5) * baseSpeed * 0.5;
+            break;
+          case 'left':
+            this.speedX = -(Math.random() * baseSpeed + baseSpeed * 0.5);
+            this.speedY = (Math.random() - 0.5) * baseSpeed * 0.5;
+            break;
+          case 'top':
+            this.speedX = (Math.random() - 0.5) * baseSpeed * 0.5;
+            this.speedY = -(Math.random() * baseSpeed + baseSpeed * 0.5);
+            break;
+          case 'bottom':
+            this.speedX = (Math.random() - 0.5) * baseSpeed * 0.5;
+            this.speedY = Math.random() * baseSpeed + baseSpeed * 0.5;
+            break;
+          default:
+            this.speedX = Math.random() * baseSpeed - baseSpeed * 0.5;
+            this.speedY = Math.random() * baseSpeed - baseSpeed * 0.5;
+        }
+      }
+      
+      update(deltaTime) {
+        if (!this.isAlive) return;
+        
+        this.elapsedTime += deltaTime;
+        this.rotation += this.rotationSpeed;
+        this.x += this.speedX;
+        this.y += this.speedY;
+        
+        // Calcular progreso de vida (0 a 1)
+        const lifeProgress = Math.min(1, this.elapsedTime / this.totalDuration);
+        
+        // Gestionar fade in/out si está habilitado
+        if (fadeInOut) {
+          if (lifeProgress < 0.2) {
+            // Fade in durante los primeros 20% de la vida
+            this.fadeProgress = lifeProgress / 0.2;
+          } else if (lifeProgress > 0.8) {
+            // Fade out durante los últimos 20% de la vida
+            this.fadeProgress = 1 - ((lifeProgress - 0.8) / 0.2);
+          } else {
+            // Opacidad completa durante el 60% central
+            this.fadeProgress = 1;
+          }
+          
+          this.currentOpacity = this.initialOpacity * this.fadeProgress;
+        } else {
+          // Sin fade, opacidad constante hasta el final
+          this.currentOpacity = this.initialOpacity;
+        }
+        
+        // Comprobar si la partícula debe morir
+        if (this.elapsedTime >= this.totalDuration || this.currentOpacity <= 0.01) {
+          this.isAlive = false;
+        }
+        
+        // Reposicionar partículas que salen completamente del canvas
+        const margin = 200;
+        const isOffscreen = 
+          this.x + this.size < -margin || 
+          this.x - this.size > canvas.width + margin ||
+          this.y + this.size < -margin || 
+          this.y - this.size > canvas.height + margin;
+        
+        if (isOffscreen) {
+          this.isAlive = false;
+        }
+      }
+      
+      draw() {
+        if (!this.isAlive || this.currentOpacity <= 0.01) return;
+        
+        ctx.save();
+        ctx.translate(this.x + this.size / 2, this.y + this.size / 2);
+        ctx.rotate(this.rotation);
+        ctx.globalAlpha = this.currentOpacity;
+
+        // Dibuja la imagen original de humo
+        ctx.drawImage(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
+
+        // Superpone un color sólido encima de la imagen
+        ctx.globalCompositeOperation = "source-atop";
+        ctx.fillStyle = smokeColor;
+        ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+
+        ctx.restore();
+      }
+      
+      // Método para reiniciar la partícula
+      reset() {
+        const { x, y } = getInitialPosition(canvas.width, canvas.height);
+        this.x = x;
+        this.y = y;
+        this.totalDuration = Math.random() * (maxDuration - minDuration) + minDuration;
+        this.elapsedTime = 0;
+        this.initialOpacity = Math.random() * (maxOpacity - minOpacity) + minOpacity;
+        this.currentOpacity = fadeInOut ? 0 : this.initialOpacity;
+        this.fadeProgress = 0;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.isAlive = true;
+        this.setMovementDirection();
+      }
+    }
+
+    const init = (loadedImage) => {
+      particlesRef.current = [];
+      for (let i = 0; i < numParticles; i++) {
+        particlesRef.current.push(new Particle(loadedImage));
+      }
+    };
+
+    const handleParticles = (deltaTime) => {
+      // Limpiar el canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      let particlesToRecycle = 0;
+      
+      for (let i = 0; i < particlesRef.current.length; i++) {
+        const particle = particlesRef.current[i];
+        
+        if (particle.isAlive) {
+          particle.update(deltaTime);
+          particle.draw();
+        } else {
+          particlesToRecycle++;
+          // Reutilizar partícula en lugar de crear una nueva
+          particle.reset();
+        }
+      }
+    };
+
+    const animate = (currentTime) => {
+      rafRef.current = requestAnimationFrame(animate);
+      const now = Date.now();
+      const elapsed = now - then;
+      
+      if (elapsed > fpsInterval) {
+        const deltaTime = elapsed;
+        then = now - (elapsed % fpsInterval);
+        handleParticles(deltaTime);
+      }
+    };
+
+    // Carga de la imagen de humo y inicio de la animación
+    if (!imageRef.current) {
+      imageRef.current = new Image();
+      imageRef.current.onload = () => {
+        resizeCanvas();
+        init(imageRef.current);
+        if (enableAnimation && !reducedMotionQuery.matches) {
+          then = Date.now();
+          animate();
+        } else {
+          // Si la animación está deshabilitada, solo dibujar una vez
+          handleParticles(0);
+        }
+      };
+      imageRef.current.src = smokeImageSource;
+    } else {
+      // Si la imagen ya está cargada, solo reiniciar
+      resizeCanvas();
+      init(imageRef.current);
+      if (enableAnimation && !reducedMotionQuery.matches) {
+        then = Date.now();
+        animate();
+      } else {
+        handleParticles(0);
+      }
+    }
+
+    const handleResize = () => {
+      const oldWidth = canvas.width;
+      const oldHeight = canvas.height;
+
+      // Actualizar tamaño del canvas
+      resizeCanvas();
+
+      const widthRatio = canvas.width / oldWidth;
+      const heightRatio = canvas.height / oldHeight;
+
+      // Escalar posiciones de las partículas en lugar de reiniciarlas
+      for (let i = 0; i < particlesRef.current.length; i++) {
+        const p = particlesRef.current[i];
+        p.x *= widthRatio;
+        p.y *= heightRatio;
+      }
+
+      // Redibujar sin resetear
+      handleParticles(0);
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [
+    smokeColor, 
+    numParticles, 
+    minSize, 
+    maxSize, 
+    minOpacity, 
+    maxOpacity, 
+    minDuration,
+    maxDuration,
+    rotationSpeed, 
+    fps, 
+    enableAnimation,
+    direction,
+    origin,
+    movementIntensity,
+    fadeInOut
+  ]);
+
+  // Convertir el valor de opacidad a formato CSS válido
+  const canvasOpacityValue = canvasOpacity / 100;
+
+  return (
+    <div 
+      id="smoke-bkg" 
+      className={`fixed top-0 -z-10 h-lvh w-lvw ${classes}`}
+    >
+      <canvas
+        id="smoke-canvas"
+        ref={canvasRef}
+        style={{ opacity: canvasOpacityValue }}
+      >
+      </canvas>
+    </div>
+  );
+};
+
+export default SmokeBackground;
+</file>
+
+<file path="src/pages/Cuestionario.jsx">
+import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router";
+import { ChevronLeft, Info, Sigma } from "lucide-react";
+import "katex/dist/katex.min.css";
+import { InlineMath } from "react-katex";
+
+const Cuestionario = () => {
+  const [cuestionarioData, setCuestionarioData] = useState(null);
+  const [respuestasUsuario, setRespuestasUsuario] = useState({});
+  const [puntajeTotal, setPuntajeTotal] = useState(0);
+  const [correctasContador, setCorrectasContador] = useState(0);
+  const [incorrectasContador, setIncorrectasContador] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [fileName, setFileName] = useState("");
+  const [error, setError] = useState("");
+  const [cargando, setCargando] = useState(false);
+  const [mostrarContenido, setMostrarContenido] = useState(false);
+  const [nombreCuestionario, setNombreCuestionario] = useState("");
+  const [esAleatorio, setEsAleatorio] = useState(true);
+
+  const fileInputRef = useRef(null);
+  const fileInputCargarOtroRef = useRef(null);
+
+  const MARKERS = {
+    CODE_START: "[INICIO_CODIGO]",
+    CODE_END: "[FIN_CODIGO]",
+    MATH_START: "[INICIO_MAT]",
+    MATH_END: "[FIN_MAT]",
+  };
+
+  const shuffleArray = (array) => {
+    const newArr = [...array];
+    for (let i = newArr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+    }
+    return newArr;
+  };
+
+  const renderContent = (text) => {
+    if (typeof text !== "string") return text;
+
+    // Split por marcadores de código y matemáticas usando regex
+    const parts = text.split(
+      /(\[INICIO_CODIGO\][\s\S]*?\[FIN_CODIGO\]|\[INICIO_MAT\][\s\S]*?\[FIN_MAT\])/g,
+    );
+
+    return parts.map((part, index) => {
+      if (part.startsWith(MARKERS.CODE_START)) {
+        const content = part
+          .replace(MARKERS.CODE_START, "")
+          .replace(MARKERS.CODE_END, "")
+          .trim();
+        return (
+          <pre
+            key={index}
+            className="bg-gray-100 p-2 font-mono text-[10px] border border-gray-300 overflow-x-auto whitespace-pre-wrap break-all my-2"
+          >
+            {content}
+          </pre>
+        );
+      }
+      if (part.startsWith(MARKERS.MATH_START)) {
+        const content = part
+          .replace(MARKERS.MATH_START, "")
+          .replace(MARKERS.MATH_END, "")
+          .trim();
+        return <InlineMath key={index} math={content} />;
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setFileName(file.name);
+    setCargando(true);
+    setMostrarContenido(false);
+    setError("");
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        setCuestionarioData(data);
+        const nombreBase = file.name.replace(".json", "").split("_").join(" ");
+        setNombreCuestionario(
+          nombreBase.charAt(0).toUpperCase() + nombreBase.slice(1),
+        );
+        inicializarCuestionario(data);
+      } catch (err) {
+        setError("Error al parsear el archivo JSON: " + err.message);
+        setCargando(false);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const inicializarCuestionario = (data) => {
+    if (!data) return;
+
+    let preguntasProcesadas = esAleatorio
+      ? shuffleArray(data.preguntas)
+      : [...data.preguntas];
+
+    preguntasProcesadas = preguntasProcesadas.map((pregunta) => {
+      const respuestas_correctas_array = Array.isArray(
+        pregunta.respuesta_correcta,
+      )
+        ? pregunta.respuesta_correcta.map((res) => String(res).trim())
+        : [String(pregunta.respuesta_correcta).trim()];
+
+      const opcionesOriginales = [...pregunta.opciones];
+      const opcionesShuffled = esAleatorio
+        ? shuffleArray(opcionesOriginales)
+        : opcionesOriginales;
+
+      const correctas_shuffled_indices = respuestas_correctas_array
+        .map((correctAnswer) => opcionesShuffled.indexOf(correctAnswer))
+        .filter((index) => index !== -1);
+
+      return {
+        ...pregunta,
+        opciones: opcionesShuffled,
+        respuestas_correctas_array,
+        esMultipleRespuesta: respuestas_correctas_array.length > 1,
+        correctas_shuffled_indices: [...new Set(correctas_shuffled_indices)],
+      };
+    });
+
+    setShuffledQuestions(preguntasProcesadas);
+    setRespuestasUsuario({});
+    setPuntajeTotal(0);
+    setCorrectasContador(0);
+    setIncorrectasContador(0);
+    setCurrentQuestionIndex(0);
+    setMostrarContenido(true);
+    setCargando(false);
+  };
+
+  const verificarRespuesta = (index) => {
+    const pregunta = shuffledQuestions[index];
+    const respuesta = respuestasUsuario[index];
+    if (!respuesta) return;
+
+    const userIndices = new Set(respuesta.opcionIndices);
+    const correctIndices = new Set(pregunta.correctas_shuffled_indices);
+
+    const isCorrect =
+      userIndices.size === correctIndices.size &&
+      [...userIndices].every((idx) => correctIndices.has(idx));
+
+    setRespuestasUsuario((prev) => ({
+      ...prev,
+      [index]: { ...respuesta, esCorrecta: isCorrect, verificada: true },
+    }));
+
+    if (isCorrect) {
+      setPuntajeTotal((p) => p + parseInt(pregunta.puntaje));
+      setCorrectasContador((c) => c + 1);
+    } else {
+      setIncorrectasContador((i) => i + 1);
+    }
+  };
+
+  const seleccionarOpcion = (qIdx, oIdx) => {
+    if (respuestasUsuario[qIdx]?.verificada) return;
+
+    const current = respuestasUsuario[qIdx] || { opcionIndices: [] };
+    const existe = current.opcionIndices.indexOf(oIdx);
+
+    let nuevosIndices =
+      existe > -1
+        ? current.opcionIndices.filter((i) => i !== oIdx)
+        : [...current.opcionIndices, oIdx];
+
+    setRespuestasUsuario({
+      ...respuestasUsuario,
+      [qIdx]: { opcionIndices: nuevosIndices, verificada: false },
+    });
+  };
+
+  const getOpcionClass = (qIdx, oIdx) => {
+    const res = respuestasUsuario[qIdx];
+    const preg = shuffledQuestions[qIdx];
+    if (!res) return "border-gray-300 hover:border-black";
+
+    if (res.verificada) {
+      const estaSeleccionada = res.opcionIndices.includes(oIdx);
+      const esCorrecta = preg.correctas_shuffled_indices.includes(oIdx);
+      if (esCorrecta)
+        return "border-green-500 bg-green-50 text-green-700 font-bold";
+      if (estaSeleccionada && !esCorrecta)
+        return "border-red-500 bg-red-50 text-red-700";
+      return "border-gray-200 opacity-50";
+    }
+
+    return res.opcionIndices.includes(oIdx)
+      ? "bg-black text-white border-black"
+      : "border-gray-300 hover:bg-gray-50";
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-white text-black font-mono p-4 overflow-hidden">
+      {mostrarContenido && (
+        <header className="mb-2 pb-2 border-b border-black flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="btn btn-xs btn-square rounded-none bg-black text-white"
+            >
+              <ChevronLeft size={16} />
+            </Link>
+            <span className="font-bold uppercase text-sm">
+              {nombreCuestionario}
+            </span>
+          </div>
+          <button
+            onClick={() => fileInputCargarOtroRef.current?.click()}
+            className="btn btn-xs rounded-none bg-black text-white px-4"
+          >
+            CAMBIAR
+          </button>
+          <input
+            ref={fileInputCargarOtroRef}
+            type="file"
+            accept=".json"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </header>
+      )}
+
+      <main className="flex-1 flex flex-col gap-2 min-h-0">
+        {/* Pantalla de inicio - Solo visible cuando NO hay contenido cargado */}
+        {!mostrarContenido && !cargando && (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-full max-w-2xl border border-black p-6 md:p-8">
+              <div className="text-center space-y-3">
+                <p className="font-bold uppercase tracking-widest text-xs">
+                  Cargar Cuestionario:
+                </p>
+
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-8 py-2 bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors text-sm"
+                >
+                  SELECCIONAR ARCHIVO JSON
+                </button>
+
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <input
+                    type="checkbox"
+                    checked={esAleatorio}
+                    onChange={() => setEsAleatorio(!esAleatorio)}
+                    className="checkbox checkbox-xs rounded-none border-black"
+                  />
+                  <span className="text-[10px] font-bold">
+                    MODO ALEATORIO (PREGUNTAS Y OPCIONES)
+                  </span>
+                </div>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+
+                {/* Instrucciones del formato JSON */}
+                <div className="mt-8 text-left border-t border-black pt-6">
+                  <h3 className="text-lg font-bold mb-3 text-center">
+                    ESPECIFICACIONES DEL FORMATO
+                  </h3>
+
+                  <div className="space-y-4 text-xs md:text-sm">
+                    <div className="bg-gray-50 p-4 border border-gray-300">
+                      <p className="font-bold mb-2">Estructura del Objeto:</p>
+                      <pre className="whitespace-pre-wrap break-all font-mono text-[10px] bg-white p-3 border border-gray-200">
+                        {`{
+  "preguntas": [
+    {
+      "pregunta": "Texto con [INICIO_MAT]x^2[FIN_MAT]",
+      "opciones": ["Opción A", "[INICIO_CODIGO]print('B')[FIN_CODIGO]", "C"],
+      "respuesta_correcta": "Opción A", // O array para múltiple
+      "puntaje": 10,
+      "dificultad": "Media"
+    }
+  ]
+}`}
+                      </pre>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="border border-gray-300 p-3">
+                        <p className="font-bold mb-2">
+                          Sintaxis de Enriquecimiento:
+                        </p>
+                        <ul className="list-disc pl-4 space-y-2 text-[11px]">
+                          <li>
+                            <span className="font-bold">
+                              Bloques de Código:
+                            </span>
+                            <br />
+                            <code className="bg-gray-200 px-1">
+                              [INICIO_CODIGO] ... [FIN_CODIGO]
+                            </code>
+                          </li>
+                          <li>
+                            <span className="font-bold">
+                              Fórmulas Matemáticas (LaTeX):
+                            </span>
+                            <br />
+                            <code className="bg-gray-200 px-1">
+                              [INICIO_MAT] ... [FIN_MAT]
+                            </code>
+                          </li>
+                          <li className="italic opacity-70">
+                            Disponibles en 'pregunta', 'opciones' y
+                            'respuesta_correcta'.
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="border border-gray-300 p-3">
+                        <p className="font-bold mb-2">Reglas de Validación:</p>
+                        <ul className="list-disc pl-4 space-y-1 text-[11px]">
+                          <li>
+                            <span className="font-mono font-bold">
+                              respuesta_correcta
+                            </span>
+                            : Debe coincidir exactamente con el texto de una o
+                            varias opciones.
+                          </li>
+                          <li>
+                            <span className="font-mono font-bold">puntaje</span>
+                            : Valor numérico entero.
+                          </li>
+                          <li>
+                            Soporta múltiples respuestas correctas usando un
+                            array <span className="font-mono">[ ]</span>.
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-300 p-3 flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-xs">RECURSO DE APOYO</p>
+                        <p className="text-[10px]">
+                          Esquema base para validación de estructura.
+                        </p>
+                      </div>
+                      <a
+                        href="../../public/python_cuestionario.json"
+                        download="PLANTILLA_CUESTIONARIO.json"
+                        className="btn btn-xs rounded-none bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors"
+                      >
+                        DESCARGAR JSON
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {mostrarContenido && shuffledQuestions.length > 0 && (
+          <>
+            <div className="grid grid-cols-3 border border-black divide-x divide-black bg-gray-50">
+              <div className="py-1 text-center">
+                <p className="text-[10px] opacity-60">CORRECTAS</p>
+                <p className="font-bold text-green-600">{correctasContador}</p>
+              </div>
+              <div className="py-1 text-center">
+                <p className="text-[10px] opacity-60">INCORRECTAS</p>
+                <p className="font-bold text-red-600">{incorrectasContador}</p>
+              </div>
+              <div className="py-1 text-center">
+                <p className="text-[10px] opacity-60">PUNTAJE</p>
+                <p className="font-bold">{puntajeTotal}</p>
+              </div>
+            </div>
+
+            <div className="flex-1 border border-black flex flex-col min-h-0 bg-white">
+              <div className="flex-1 p-4 overflow-y-auto">
+                <div className="flex justify-between text-[10px] opacity-50 mb-2 font-bold uppercase tracking-tighter">
+                  <span>
+                    Pregunta {currentQuestionIndex + 1} /{" "}
+                    {shuffledQuestions.length}
+                  </span>
+                  <span>
+                    {shuffledQuestions[currentQuestionIndex].dificultad} |{" "}
+                    {shuffledQuestions[currentQuestionIndex].puntaje} PTS
+                  </span>
+                </div>
+
+                <div className="mb-6 text-sm leading-relaxed">
+                  {renderContent(
+                    shuffledQuestions[currentQuestionIndex].pregunta,
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  {shuffledQuestions[currentQuestionIndex].opciones.map(
+                    (opcion, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() =>
+                          seleccionarOpcion(currentQuestionIndex, idx)
+                        }
+                        disabled={
+                          respuestasUsuario[currentQuestionIndex]?.verificada
+                        }
+                        className={`w-full text-left p-3 text-xs border transition-all flex items-start gap-3 ${getOpcionClass(currentQuestionIndex, idx)}`}
+                      >
+                        <span className="opacity-50 font-bold">
+                          {String.fromCharCode(65 + idx)}.
+                        </span>
+                        <div className="flex-1">{renderContent(opcion)}</div>
+                      </button>
+                    ),
+                  )}
+                </div>
+
+                {respuestasUsuario[currentQuestionIndex]?.verificada && (
+                  <div
+                    className={`mt-4 p-3 border text-xs ${respuestasUsuario[currentQuestionIndex].esCorrecta ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"}`}
+                  >
+                    <p className="font-bold uppercase mb-1">
+                      {respuestasUsuario[currentQuestionIndex].esCorrecta
+                        ? "✓ Respuesta Correcta"
+                        : "✗ Respuesta Incorrecta"}
+                    </p>
+                    {!respuestasUsuario[currentQuestionIndex].esCorrecta && (
+                      <div className="mt-1">
+                        <span className="font-bold">Solución:</span>
+                        <div className="mt-2 pl-2 border-l-2 border-red-200">
+                          {shuffledQuestions[
+                            currentQuestionIndex
+                          ].respuestas_correctas_array.map((solucion, sIdx) => (
+                            <div key={sIdx} className="mb-1">
+                              {renderContent(solucion)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-3 border-t border-black bg-gray-50 flex justify-between items-center">
+                {!respuestasUsuario[currentQuestionIndex]?.verificada ? (
+                  <button
+                    onClick={() => verificarRespuesta(currentQuestionIndex)}
+                    disabled={
+                      !respuestasUsuario[currentQuestionIndex]?.opcionIndices
+                        .length
+                    }
+                    className="w-full btn btn-sm rounded-none bg-black text-white"
+                  >
+                    VERIFICAR
+                  </button>
+                ) : (
+                  <div className="text-[10px] font-bold flex items-center gap-2">
+                    <Info size={14} />{" "}
+                    {shuffledQuestions[currentQuestionIndex].esMultipleRespuesta
+                      ? "ESTA PREGUNTA ERA MULTIPLE"
+                      : "PREGUNTA COMPLETADA"}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() =>
+                  setCurrentQuestionIndex((prev) => Math.max(0, prev - 1))
+                }
+                disabled={currentQuestionIndex === 0}
+                className="btn btn-sm rounded-none border-2 border-black bg-white hover:bg-black hover:text-white disabled:opacity-30"
+              >
+                ATRÁS
+              </button>
+              <button
+                onClick={() => inicializarCuestionario(cuestionarioData)}
+                className="btn btn-sm rounded-none border-2 border-red-600 bg-white text-red-600 hover:bg-red-600 hover:text-white font-bold"
+              >
+                REINICIAR
+              </button>
+              <button
+                onClick={() =>
+                  setCurrentQuestionIndex((prev) =>
+                    Math.min(shuffledQuestions.length - 1, prev + 1),
+                  )
+                }
+                disabled={currentQuestionIndex === shuffledQuestions.length - 1}
+                className="btn btn-sm rounded-none border-2 border-black bg-white hover:bg-black hover:text-white disabled:opacity-30"
+              >
+                SIGUIENTE
+              </button>
+            </div>
+          </>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default Cuestionario;
+</file>
+
+<file path="src/pages/Secret.jsx">
+import SmokeBackground from "../effects/SmokeBackground";
+import { Link } from "react-router";
+import { HomeIcon } from 'lucide-react';
+
+const Secret = () => {
+
+  return (
+    <>
+      {/* Fondo de humo y texto */}
+      <div className="fixed inset-0 w-lvw h-lvh z-0 pointer-events-none crt-effect">
+        <div className="fixed md:hidden">
+          <SmokeBackground
+            fadeInOut={true}
+            minOpacity={0.2}
+            maxOpacity={0.5}
+            numParticles={8}
+            direction="left"
+            origin="right"
+            movementIntensity={7}
+          />
+        </div>
+        
+        <div className="hidden md:block">
+          <SmokeBackground
+            fadeInOut={true}
+            minOpacity={0.2}
+            maxOpacity={0.5}
+            numParticles={35}
+            direction="left"
+            origin="right"
+            movementIntensity={10}
+          />
+        </div>
+        
+
+        {/* Efecto de grano */}
+        <img className="fixed overflow-hidden top-0 bottom-0 left-0 right-0 h-lvh w-lvw pointer-events-none z-10 mix-blend-color-dodge opacity-20" alt="background texture" src="/grunge.jpg" />
+      </div>
+
+      <div className="w-full h-full text-almond relative">
+
+        {/* Contenedor principal centrado */}
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <div className="w-full max-w-4xl">
+            <div className="flex flex-col items-center">
+              <iframe className="w-full aspect-video" src="https://www.youtube.com/embed/G_XeW7P-1hs" title="jarvis pedilo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            </div>
+            <div className="flex items-center justify-center mt-4">
+              <Link to="/" className="btn glass text-almond">
+                <HomeIcon className="w-5 h-5"/>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        
+      </div>
+    </>
+  );
+};
+
+export default Secret;
+</file>
+
+<file path="src/pages/Terminal.jsx">
+import React, { useState } from 'react';
+import { Link, Routes, Route } from "react-router";
+import { DATA } from '../data/terminalData';
+import { VigenereCipher } from '../utils/vigenereCipher';
+
+const Terminal = () => {
+  const [secretKey, setSecretKey] = useState("...");
+  const [selLevel, setSelLevel] = useState(null);
+  const [spoilerRevealed, setSpoilerRevealed] = useState({});
+
+  const formatValue = (value, secretKey) => {
+    if (!value || !value.trim()) return "-";
+    return VigenereCipher(value, secretKey);
+  };
+
+  const revealSpoiler = (itemId, e) => {
+    e.stopPropagation();
+    setSpoilerRevealed(prev => ({
+      ...prev,
+      [itemId]: true
+    }));
+  };
+
+  const handleItemClick = (item, e) => {
+    if (item.link) {
+      window.open(item.link, '_blank');
+    }
+  };
+
+  // Verificar si el nivel completo es spoiler
+  const isLevelSpoiler = selLevel?.spoiler || false;
+  const [levelSpoilerRevealed, setLevelSpoilerRevealed] = useState(false);
+
+  const revealLevelSpoiler = (e) => {
+    e.stopPropagation();
+    setLevelSpoilerRevealed(true);
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-white text-black font-mono p-6 selection:bg-black selection:text-white text-[140%]">
+      
+      <header className="flex-shrink-0 mb-6 pb-3 border-b border-black">
+        <Link className="text-2xl font-bold tracking-tight" to="/">
+          🎕
+        </Link>
+
+        <div className="flex gap-4 mt-3 text-base">
+          <span className="px-3 py-1 bg-black text-white text-sm">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+        </div>
+      </header>
+
+      <main className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-6 gap-4 mb-6">
+
+        {/* LEVELS */}
+        <section className="lg:col-span-2 border border-black bg-white p-3 flex flex-col overflow-y-auto">
+          <div className="mb-4">
+            <div className="text-sm uppercase tracking-widest opacity-50 mb-1">ACCESS LEVEL</div>
+            <div className="h-px bg-black mb-2"></div>
+          </div>
+
+          <div className="space-y-1.5 flex-1 overflow-y-auto">
+            {DATA.map((lvl, idx) => (
+              <button
+                key={lvl.id}
+                onClick={() => { 
+                  setSelLevel(lvl);
+                  setLevelSpoilerRevealed(false);
+                }}
+                className={`w-full text-left p-3 text-base border font-mono transition
+                  ${selLevel?.id === lvl.id
+                    ? 'bg-black text-white border-black'
+                    : 'border-gray-300 hover:border-black hover:bg-gray-50'
+                  }`}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-base">
+                    LEVEL {String(idx + 1).padStart(3, '00')}
+                  </span>
+                  <span className={`text-sm ${selLevel?.id === lvl.id ? 'opacity-95' : 'opacity-25'}`}>
+                    {lvl.items.length}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* DIRECTORY */}
+        <section className="lg:col-span-4 border border-black bg-white p-3 flex flex-col overflow-y-auto relative">
+          <div className="mb-4">
+            <div className="text-sm uppercase tracking-widest opacity-50 mb-1">DIRECTORY</div>
+            <div className="h-px bg-black mb-2"/>
+          </div>
+
+          {selLevel ? (
+            <div className="relative flex-1 min-h-0">
+              {/* Spoiler overlay para nivel completo - TAPA TODA LA SECCIÓN */}
+              {isLevelSpoiler && !levelSpoilerRevealed && (
+                <div 
+                  className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 glass backdrop-blur-sm cursor-pointer"
+                  onClick={revealLevelSpoiler}
+                >
+                  <div className="bg-black text-white px-8 py-4 text-lg font-bold uppercase tracking-widest transform hover:scale-105 transition border-2 border-white shadow-2xl">
+                    SPOILER
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 overflow-y-auto max-h-full">
+                {selLevel.items.map(item => (
+                  <div key={item.id} className="relative">
+                    {/* Spoiler overlay para item individual - SOLO UNA VEZ */}
+                    {item.spoiler && !spoilerRevealed[item.id] && (
+                      <div 
+                        className="absolute inset-0 z-10 flex items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer"
+                        onClick={(e) => revealSpoiler(item.id, e)}
+                      >
+                        <div className="bg-black text-white px-4 py-2 text-sm font-bold uppercase tracking-widest border border-white shadow-lg">
+                          SPOILER
+                        </div>
+                      </div>
+                    )}
+                    
+                    <button
+                      onClick={(e) => handleItemClick(item, e)}
+                      disabled={item.spoiler && !spoilerRevealed[item.id]}
+                      className={`w-full text-center p-3 text-base border transition group
+                        ${item.spoiler && !spoilerRevealed[item.id] 
+                          ? 'border-gray-300 bg-black/25 glass backdrop-blur-sm' 
+                          : 'border-gray-300 hover:border-black hover:bg-black hover:text-white'
+                        }
+                        ${item.link && spoilerRevealed[item.id] ? 'cursor-pointer' : ''}
+                        ${item.link && !item.spoiler ? 'cursor-pointer' : ''}
+                      `}
+                    >
+                      <div className="truncate font-medium">
+                        {formatValue(item.name, secretKey)}
+                      </div>
+                      <div className="text-xs opacity-50 mt-1">
+                        {item.added}
+                      </div>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center opacity-30">
+              <div className="text-center space-y-3">
+                <div className="text-4xl">[ ... ]</div>
+                <div className="text-base tracking-widest">
+                  SELECT A LEVEL TO VIEW FILES
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
+
+      {/* FOOTER */}
+      <footer className="border-t border-black pt-4">
+        <div className="flex justify-center mb-3">
+          <div className="join border border-black overflow-hidden">
+            <input
+              type="text"
+              value={secretKey}
+              onChange={(e) => setSecretKey(e.target.value.toUpperCase())}
+              className="join-item px-3 py-2 text-base uppercase outline-none"
+              maxLength={20}
+            />
+            <div className="join-item rounded-none px-4 py-2.5 bg-black text-white text-sm font-bold">
+              {secretKey.length}/20
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-gray-300 text-sm opacity-50 text-center">
+          2026 PLRGNM
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default Terminal;
+</file>
+
+<file path="src/index.css">
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=IBM+Plex+Mono&display=swap');
+
+@import "tailwindcss";
+@plugin "daisyui";
+@plugin "daisyui/theme" {
+  name: "lp-creator";
+  default: true; /* set as default */
+  prefersdark: true; /* set as default dark mode (prefers-color-scheme:dark) */
+  color-scheme: light; /* color of browser-provided UI */
+
+  /* Colores base monocromáticos */
+  --color-base-100: #f8f8f8; /* Fondo principal gris claro */
+  --color-base-200: #e0e0e0; /* Elementos secundarios */
+  --color-base-300: #bdbdbd; /* Bordes o separadores */
+  --color-base-content: #222; /* Contenido oscuro sobre fondo claro */
+
+  /* border radius */
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+  /* base sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  /* border size */
+  --border: 1px;
+  /* effects */
+  --depth: 1;
+  --noise: 0;
+}
+
+@config "../tailwind.config.js";
+
+.animate-fadeOut {
+  animation: fadeOut 1s ease-in-out forwards;
+  animation-delay: 2s;
+}
+
+.text-outline {
+  color: black;
+  text-shadow: 
+    -2px -2px 0 #fff,
+    2px -2px 0 #fff,
+    -2px 2px 0 #fff,
+    2px 2px 0 #fff;
+}
+
+.crt-effect::before {
+  content: ' ';
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  z-index: 15;
+  pointer-events: none;
+  
+  /* Nuevo fondo y animación */
+  background-image:
+    /* Líneas de escaneo horizontales */
+    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    /* Aberración cromática vertical */
+    linear-gradient(90deg, rgba(255, 0, 0, 0.025), rgba(0, 255, 0, 0.025), rgba(0, 0, 255, 0.025));
+  
+  /* Tamaños de las líneas */
+  background-size: 100% 4px, 4px 100%;
+  
+  /* Filtro de desenfoque y saturación */
+  filter: blur(0.5px) saturate(1.2);
+}
+</file>
+
+<file path="README.md">
+# hola
+</file>
+
+<file path="vite.config.js">
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [
+    react(),
+    tailwindcss()
+  ],
+})
+</file>
+
+<file path="src/components/LPC/Player.jsx">
+import { useState } from 'react';
+import { Link } from 'react-router';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, AudioLines, Mic, ListMusic, ChevronLeft } from 'lucide-react';
+
+const Player = ({
+  isPlaying,
+  playlist,
+  currentSongIndex,
+  togglePlay,
+  playNext,
+  playPrevious,
+  volume,
+  setVolume,
+  progress,
+  duration,
+  handleSeek,
+  noBg,
+  tab,
+  setTab
+}) => {
+  const currentSong = playlist[currentSongIndex];
+	const [isVolumeHovered, setIsVolumeHovered] = useState(false);
+
+  const formatTime = (time) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div
+      className="w-full h-full flex flex-col items-center justify-center text-white"
+    >
+      <div className="flex items-center justify-between w-full lg:w-[85%] lg:translate-y-[-170px] mb-4 lg:mb-0">
+        <Link
+          to="/"
+          className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+        >
+          <ChevronLeft/>
+        </Link>
+      </div>
+
+      <div className="text-center w-full">
+        <h2 className='text-sm opacity-70'>
+          {currentSong ? `Track ${currentSong.track}` : ""}
+        </h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {currentSong ? currentSong.album : ""}
+        </h2>
+        <div className={`flex w-full justify-center overflow-hidden mb-4 ${noBg ? '' : 'bg-white/10'}`}>
+          {currentSong && currentSong.coverArt ? (
+            <img 
+              src={currentSong.coverArt} 
+              alt="Cover Art" 
+              className="object-cover aspect-square rounded-lg max-w-[200px] lg:max-w-[300px]" 
+            />
+          ) : (
+            <div className="flex aspect-square max-w-[200px] lg:max-w-[300px] w-full justify-center items-center rounded-lg bg-white/10">
+              <AudioLines size={80} className="text-white lg:size-[120px]" />
+            </div>
+          )}
+        </div>
+        <h2 className="text-2xl font-bold truncate px-4">
+          {currentSong ? currentSong.title : "-"}
+        </h2>
+        <p className="text-sm opacity-70 mb-4 px-4">
+          {currentSong ? currentSong.artist : "-"}
+        </p>
+      </div>
+
+      <div className="w-full flex items-center justify-center gap-4 mt-4 px-4">
+        <span className="text-sm lg:text-base">{formatTime(progress)}</span>
+        <input
+          type="range"
+          value={progress}
+          max={duration}
+          onChange={handleSeek}
+          className="range range-white w-[60%] lg:w-[70%] [--range-thumb:transparent] [--range-thumb-size:0.3rem]"
+          step="0.1"
+          disabled={!currentSong}
+        />
+        <span className="text-sm lg:text-base">{formatTime(duration)}</span>
+      </div>
+
+			{/* Contenedor principal de los controles */}
+      <div className="flex items-center justify-between w-full lg:w-[85%] mt-6 px-4 lg:px-0">
+        {/* Contenedor para el botón de volumen y su slider */}
+        <div
+          className="relative hidden lg:block"
+          onMouseEnter={() => setIsVolumeHovered(true)}
+          onMouseLeave={() => setIsVolumeHovered(false)}
+        >
+          <button
+            onClick={() => setVolume(volume === 0 ? 0.15 : 0)}
+            className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+          >
+            {volume > 0 ? <Volume2 /> : <VolumeX />}
+          </button>
+          <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3">
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(e) => setVolume(parseFloat(e.target.value))}
+              className={`
+                transition-all duration-300 ease-in-out
+                ${isVolumeHovered ? 'w-24 opacity-100' : 'w-0 opacity-0 pointer-events-none'}
+                range range-white [--range-thumb:transparent] [--range-thumb-size:0.3rem]
+              `}
+            />
+          </div>
+        </div>
+
+        {/* Contenedor de los botones de reproducción, ahora en el centro */}
+        <div className="flex items-center gap-4 lg:gap-6 w-full justify-center">
+          <button
+            onClick={playPrevious}
+            className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+            disabled={currentSongIndex === 0 || playlist.length === 0}
+          >
+            <SkipBack size={20} className="lg:size-6" />
+          </button>
+          <button
+            onClick={togglePlay}
+            className="btn btn-lg btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+            disabled={playlist.length === 0}
+          >
+            {isPlaying ? <Pause size={24} className="lg:size-8" /> : <Play size={24} className="lg:size-8" />}
+          </button>
+          <button
+            onClick={playNext}
+            className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+            disabled={currentSongIndex === playlist.length - 1 || playlist.length === 0}
+          >
+            <SkipForward size={20} className="lg:size-6" />
+          </button>
+        </div>
+
+        <button
+          onClick={() => setTab(tab === 'playlist' ? 'lyrics' : 'playlist')}
+          className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 hidden lg:flex"
+        >
+          {tab === 'playlist' ? <Mic /> : <ListMusic />}
+        </button>
+
+        {/* Control de volumen para móvil */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <button
+            onClick={() => setVolume(volume === 0 ? 0.15 : 0)}
+            className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+          >
+            {volume > 0 ? <Volume2 size={20} /> : <VolumeX size={20} />}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className="w-16 range range-white [--range-thumb:transparent] [--range-thumb-size:0.3rem]"
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Player;
+</file>
+
+<file path="src/pages/CalculoMental.jsx">
+// CalculoMental.jsx
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router';
+import { ChevronLeft, Clock, Award, Brain, Settings, BarChart } from 'lucide-react';
+
+// Componente para la pantalla de configuración
+const PantallaConfiguracion = ({ onIniciar }) => {
+  const [config, setConfig] = useState({
+    operaciones: {
+      suma: true,
+      resta: false,
+      multiplicacion: false,
+      division: false
+    },
+    cantidadPreguntas: 10,
+    digitosMin: 1,
+    digitosMax: 1,
+    modoRespuesta: 'opciones', // 'opciones' o 'escritura'
+    tiempoLimite: 60 // segundos
+  });
+
+  const [error, setError] = useState('');
+
+  const handleOperacionChange = (operacion) => {
+    setConfig(prev => ({
+      ...prev,
+      operaciones: {
+        ...prev.operaciones,
+        [operacion]: !prev.operaciones[operacion]
+      }
+    }));
+  };
+
+  const handleDigitosChange = (tipo, valor) => {
+    const numValor = parseInt(valor) || 1;
+    
+    if (tipo === 'min') {
+      if (numValor <= config.digitosMax) {
+        setConfig(prev => ({ ...prev, digitosMin: Math.min(8, Math.max(1, numValor)) }));
+      }
+    } else {
+      if (numValor >= config.digitosMin) {
+        setConfig(prev => ({ ...prev, digitosMax: Math.min(8, Math.max(1, numValor)) }));
+      }
+    }
+  };
+
+  const validarYIniciar = () => {
+    const operacionesSeleccionadas = Object.values(config.operaciones).filter(Boolean).length;
+    
+    if (operacionesSeleccionadas === 0) {
+      setError('Debes seleccionar al menos una operación');
+      return;
+    }
+
+    if (config.cantidadPreguntas < 1 || config.cantidadPreguntas > 50) {
+      setError('La cantidad de preguntas debe estar entre 1 y 50');
+      return;
+    }
+
+    if (config.modoRespuesta === 'escritura' && (config.digitosMin > 3 || config.digitosMax > 3)) {
+      setError('El modo escritura solo está disponible para números de hasta 3 dígitos');
+      return;
+    }
+
+    onIniciar(config);
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-white text-black font-mono p-4 overflow-y-auto">
+      <header className="mb-6 pb-2 border-b border-black flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/"
+            className="btn btn-xs btn-square rounded-none bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors"
+          >
+            <ChevronLeft />
+          </Link>
+          <h1 className="text-2xl font-bold">CÁLCULO MENTAL</h1>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-2xl mx-auto w-full">
+        <div className="border border-black p-6 space-y-6">
+          {/* Operaciones */}
+          <div>
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <Brain size={18} /> OPERACIONES
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { id: 'suma', label: 'SUMA (+)', emoji: '➕' },
+                { id: 'resta', label: 'RESTA (-)', emoji: '➖' },
+                { id: 'multiplicacion', label: 'MULTIPLICACIÓN (×)', emoji: '✖️' },
+                { id: 'division', label: 'DIVISIÓN (÷)', emoji: '➗' }
+              ].map(op => (
+                <button
+                  key={op.id}
+                  onClick={() => handleOperacionChange(op.id)}
+                  className={`p-3 border-2 transition-all text-left ${
+                    config.operaciones[op.id]
+                      ? 'bg-black text-white border-black'
+                      : 'border-gray-300 hover:border-black hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="text-lg mr-2">{op.emoji}</span>
+                  <span className="text-sm font-bold">{op.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Cantidad de preguntas */}
+          <div>
+            <h2 className="text-lg font-bold mb-3">CANTIDAD DE PREGUNTAS</h2>
+            <input
+              type="range"
+              min="1"
+              max="50"
+              value={config.cantidadPreguntas}
+              onChange={(e) => setConfig(prev => ({ ...prev, cantidadPreguntas: parseInt(e.target.value) }))}
+              className="w-full accent-black"
+            />
+            <div className="text-center mt-2">
+              <span className="text-2xl font-bold">{config.cantidadPreguntas}</span>
+            </div>
+          </div>
+
+          {/* Dígitos */}
+          <div>
+            <h2 className="text-lg font-bold mb-3">CANTIDAD DE DÍGITOS</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs opacity-50 mb-1">MÍNIMO</label>
+                <select
+                  value={config.digitosMin}
+                  onChange={(e) => handleDigitosChange('min', e.target.value)}
+                  className="w-full p-2 border border-black font-mono text-center"
+                >
+                  {[1,2,3,4,5,6,7,8].map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs opacity-50 mb-1">MÁXIMO</label>
+                <select
+                  value={config.digitosMax}
+                  onChange={(e) => handleDigitosChange('max', e.target.value)}
+                  className="w-full p-2 border border-black font-mono text-center"
+                >
+                  {[1,2,3,4,5,6,7,8].map(n => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <p className="text-xs text-center mt-2 opacity-50">
+              Rango: {config.digitosMin} - {config.digitosMax} dígitos
+            </p>
+          </div>
+
+          {/* Modo de respuesta */}
+          <div>
+            <h2 className="text-lg font-bold mb-3">MODO DE RESPUESTA</h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setConfig(prev => ({ ...prev, modoRespuesta: 'opciones' }))}
+                className={`p-3 border-2 transition-all ${
+                  config.modoRespuesta === 'opciones'
+                    ? 'bg-black text-white border-black'
+                    : 'border-gray-300 hover:border-black hover:bg-gray-50'
+                }`}
+              >
+                <span className="block font-bold">OPCIONES</span>
+                <span className="text-xs opacity-75">Seleccionar respuesta</span>
+              </button>
+              <button
+                onClick={() => setConfig(prev => ({ ...prev, modoRespuesta: 'escritura' }))}
+                className={`p-3 border-2 transition-all ${
+                  config.modoRespuesta === 'escritura'
+                    ? 'bg-black text-white border-black'
+                    : 'border-gray-300 hover:border-black hover:bg-gray-50'
+                }`}
+              >
+                <span className="block font-bold">ESCRITURA</span>
+                <span className="text-xs opacity-75">Escribir respuesta</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Tiempo límite */}
+          <div>
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <Clock size={18} /> TIEMPO LÍMITE
+            </h2>
+            <div className="grid grid-cols-4 gap-2">
+              {[30, 60, 120, 300].map(tiempo => (
+                <button
+                  key={tiempo}
+                  onClick={() => setConfig(prev => ({ ...prev, tiempoLimite: tiempo }))}
+                  className={`p-2 border-2 text-center transition-all ${
+                    config.tiempoLimite === tiempo
+                      ? 'bg-black text-white border-black'
+                      : 'border-gray-300 hover:border-black hover:bg-gray-50'
+                  }`}
+                >
+                  {tiempo < 60 ? `${tiempo}s` : `${tiempo/60}min`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div className="border border-red-500 bg-red-50 p-3 text-red-800 text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            onClick={validarYIniciar}
+            className="w-full p-4 bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors text-lg"
+          >
+            INICIAR CÁLCULO MENTAL →
+          </button>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// Componente para la pantalla del quiz
+const PantallaQuiz = ({ config, onTerminar, onTiempoAgotado }) => {
+  const [preguntas, setPreguntas] = useState([]);
+  const [preguntaActual, setPreguntaActual] = useState(0);
+  const [respuestas, setRespuestas] = useState([]);
+  const [respuestaActual, setRespuestaActual] = useState('');
+  const [opcionesActuales, setOpcionesActuales] = useState([]);
+  const [tiempoRestante, setTiempoRestante] = useState(config.tiempoLimite);
+  const [mostrarFeedback, setMostrarFeedback] = useState(false);
+  const [esCorrecta, setEsCorrecta] = useState(false);
+  const [puntaje, setPuntaje] = useState(0);
+
+  const inputRef = useRef(null);
+  const timerRef = useRef(null);
+
+  // Generar números aleatorios
+  const generarNumero = (digitos) => {
+    const min = Math.pow(10, digitos - 1);
+    const max = Math.pow(10, digitos) - 1;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
+
+  // Calcular dificultad y puntaje
+  const calcularDificultad = (num1, num2, operacion) => {
+    let dificultad = 1;
+    
+    // Por cantidad de dígitos
+    dificultad += (num1.toString().length + num2.toString().length) / 2;
+    
+    // Por operación
+    if (operacion === 'multiplicacion') dificultad *= 1.5;
+    if (operacion === 'division') dificultad *= 2;
+    
+    return Math.round(dificultad * 10);
+  };
+
+  // Generar preguntas
+  useEffect(() => {
+    const nuevasPreguntas = [];
+    const operacionesActivas = Object.entries(config.operaciones)
+      .filter(([_, activa]) => activa)
+      .map(([op]) => op);
+
+    for (let i = 0; i < config.cantidadPreguntas; i++) {
+      const operacion = operacionesActivas[Math.floor(Math.random() * operacionesActivas.length)];
+      const digitos1 = Math.floor(Math.random() * (config.digitosMax - config.digitosMin + 1)) + config.digitosMin;
+      const digitos2 = Math.floor(Math.random() * (config.digitosMax - config.digitosMin + 1)) + config.digitosMin;
+      
+      let num1 = generarNumero(digitos1);
+      let num2 = generarNumero(digitos2);
+      
+      // Asegurar que la resta no dé negativo y la división sea exacta
+      if (operacion === 'resta' && num1 < num2) {
+        [num1, num2] = [num2, num1];
+      }
+      
+      if (operacion === 'division') {
+        num2 = Math.max(1, num2);
+        num1 = num1 * num2; // Para que sea exacta
+      }
+
+      const resultado = calcularResultado(num1, num2, operacion);
+      const dificultad = calcularDificultad(num1, num2, operacion);
+      
+      nuevasPreguntas.push({
+        id: i,
+        num1,
+        num2,
+        operacion,
+        resultado,
+        dificultad,
+        puntaje: dificultad
+      });
+    }
+
+    setPreguntas(nuevasPreguntas);
+    setRespuestas(new Array(nuevasPreguntas.length).fill(null));
+  }, [config]);
+
+  // Generar opciones para la pregunta actual
+  useEffect(() => {
+    if (preguntas.length === 0 || config.modoRespuesta !== 'opciones') return;
+
+    const pregunta = preguntas[preguntaActual];
+    if (!pregunta) return;
+
+    const opciones = [pregunta.resultado];
+    
+    while (opciones.length < 4) {
+      const variacion = Math.floor(Math.random() * 20) - 10;
+      const posibleRespuesta = pregunta.resultado + variacion;
+      if (posibleRespuesta > 0 && !opciones.includes(posibleRespuesta)) {
+        opciones.push(posibleRespuesta);
+      }
+    }
+
+    // Mezclar opciones
+    for (let i = opciones.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [opciones[i], opciones[j]] = [opciones[j], opciones[i]];
+    }
+
+    setOpcionesActuales(opciones);
+  }, [preguntaActual, preguntas, config.modoRespuesta]);
+
+  // Timer
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setTiempoRestante(prev => {
+        if (prev <= 1) {
+          clearInterval(timerRef.current);
+          onTiempoAgotado();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerRef.current);
+  }, [onTiempoAgotado]);
+
+  // Calcular resultado
+  const calcularResultado = (a, b, op) => {
+    switch(op) {
+      case 'suma': return a + b;
+      case 'resta': return a - b;
+      case 'multiplicacion': return a * b;
+      case 'division': return Math.floor(a / b);
+      default: return 0;
+    }
+  };
+
+  // Manejar respuesta
+  const manejarRespuesta = (respuesta) => {
+    if (mostrarFeedback) return;
+
+    const pregunta = preguntas[preguntaActual];
+    const respuestaNum = typeof respuesta === 'number' ? respuesta : parseFloat(respuesta);
+    const correcta = respuestaNum === pregunta.resultado;
+
+    setEsCorrecta(correcta);
+    setMostrarFeedback(true);
+
+    const nuevasRespuestas = [...respuestas];
+    nuevasRespuestas[preguntaActual] = {
+      respuesta: respuestaNum,
+      correcta,
+      puntajeObtenido: correcta ? pregunta.puntaje : 0
+    };
+
+    if (correcta) {
+      setPuntaje(prev => prev + pregunta.puntaje);
+    }
+
+    setRespuestas(nuevasRespuestas);
+
+    // Avanzar después de 1.5 segundos
+    setTimeout(() => {
+      if (preguntaActual < preguntas.length - 1) {
+        setPreguntaActual(prev => prev + 1);
+        setRespuestaActual('');
+        setMostrarFeedback(false);
+      } else {
+        clearInterval(timerRef.current);
+        onTerminar({
+          respuestas: nuevasRespuestas,
+          puntajeTotal: puntaje + (correcta ? pregunta.puntaje : 0),
+          tiempoRestante
+        });
+      }
+    }, 1500);
+  };
+
+  if (preguntas.length === 0) {
+    return <div className="flex items-center justify-center h-screen">CARGANDO...</div>;
+  }
+
+  const pregunta = preguntas[preguntaActual];
+  const operacionSimbolo = {
+    suma: '+',
+    resta: '-',
+    multiplicacion: '×',
+    division: '÷'
+  };
+
+  return (
+    <div className="h-screen flex flex-col bg-white text-black font-mono p-4">
+      {/* Header */}
+      <header className="mb-4 pb-2 border-b border-black flex-shrink-0">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-bold">CÁLCULO MENTAL</h2>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <Clock size={16} />
+              <span className={`font-bold ${tiempoRestante < 10 ? 'text-red-600' : ''}`}>
+                {Math.floor(tiempoRestante / 60)}:{(tiempoRestante % 60).toString().padStart(2, '0')}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Award size={16} />
+              <span className="font-bold">{puntaje}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Progreso */}
+      <div className="mb-4">
+        <div className="flex justify-between text-xs mb-1">
+          <span>PREGUNTA {preguntaActual + 1} DE {preguntas.length}</span>
+          <span>DIFICULTAD: {pregunta.dificultad}</span>
+        </div>
+        <div className="h-1 bg-gray-200">
+          <div 
+            className="h-1 bg-black transition-all"
+            style={{ width: `${((preguntaActual + 1) / preguntas.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Pregunta */}
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="text-7xl md:text-8xl font-bold mb-8 text-center break-all">
+          {pregunta.num1} {operacionSimbolo[pregunta.operacion]} {pregunta.num2}
+        </div>
+
+        {config.modoRespuesta === 'opciones' ? (
+          <div className="grid grid-cols-2 gap-4 w-full max-w-2xl">
+            {opcionesActuales.map((opcion, idx) => (
+              <button
+                key={idx}
+                onClick={() => manejarRespuesta(opcion)}
+                disabled={mostrarFeedback}
+                className={`p-6 text-3xl font-bold border-4 transition-all
+                  ${mostrarFeedback && opcion === pregunta.resultado
+                    ? 'border-green-500 bg-green-50'
+                    : mostrarFeedback && opcion === respuestaActual
+                    ? 'border-red-500 bg-red-50'
+                    : 'border-black hover:bg-black hover:text-white'
+                  }
+                  ${mostrarFeedback ? 'cursor-default' : 'cursor-pointer'}
+                `}
+              >
+                {opcion}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="w-full max-w-md">
+            <input
+              ref={inputRef}
+              type="number"
+              value={respuestaActual}
+              onChange={(e) => setRespuestaActual(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && respuestaActual && !mostrarFeedback) {
+                  manejarRespuesta(respuestaActual);
+                }
+              }}
+              disabled={mostrarFeedback}
+              className={`w-full p-6 text-3xl font-bold text-center border-4 outline-none
+                ${mostrarFeedback
+                  ? esCorrecta
+                    ? 'border-green-500 bg-green-50'
+                    : 'border-red-500 bg-red-50'
+                  : 'border-black focus:border-gray-500'
+                }
+              `}
+              autoFocus
+            />
+            {mostrarFeedback && !esCorrecta && (
+              <div className="mt-4 p-4 border border-red-500 bg-red-50 text-center">
+                <p className="font-bold">RESPUESTA CORRECTA:</p>
+                <p className="text-2xl font-bold">{pregunta.resultado}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      {config.modoRespuesta === 'escritura' && (
+        <div className="text-center text-xs opacity-50 mt-4">
+          Presiona ENTER para enviar tu respuesta
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Componente para la pantalla de estadísticas
+const PantallaEstadisticas = ({ resultados, config, tiempoAgotado, onReiniciar }) => {
+  const {
+    respuestas,
+    puntajeTotal,
+    tiempoRestante
+  } = resultados;
+
+  const correctas = respuestas.filter(r => r?.correcta).length;
+  const incorrectas = respuestas.filter(r => r && !r.correcta).length;
+  const sinResponder = respuestas.filter(r => r === null).length;
+
+  const operacionesTexto = Object.entries(config.operaciones)
+    .filter(([_, activa]) => activa)
+    .map(([op]) => {
+      const nombres = {
+        suma: 'SUMA',
+        resta: 'RESTA',
+        multiplicacion: 'MULTIPLICACIÓN',
+        division: 'DIVISIÓN'
+      };
+      return nombres[op];
+    })
+    .join(', ');
+
+  return (
+    <div className="h-screen flex flex-col bg-white text-black font-mono p-4 overflow-y-auto">
+      <header className="mb-6 pb-2 border-b border-black flex-shrink-0">
+        <h1 className="text-2xl font-bold">ESTADÍSTICAS FINALES</h1>
+      </header>
+
+      <main className="flex-1 max-w-2xl mx-auto w-full">
+        {tiempoAgotado && (
+          <div className="mb-6 p-6 border-4 border-red-500 bg-red-50 text-center">
+            <h2 className="text-2xl font-bold mb-2">⏰ ¡TIEMPO AGOTADO! ⏰</h2>
+            <p>No pudiste completar todas las preguntas a tiempo</p>
+          </div>
+        )}
+
+        <div className="border border-black p-6 space-y-6">
+          {/* Estadísticas principales */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 border border-black">
+              <span className="block text-3xl font-bold">{correctas}</span>
+              <span className="text-xs opacity-50">CORRECTAS</span>
+            </div>
+            <div className="text-center p-4 border border-black">
+              <span className="block text-3xl font-bold">{incorrectas}</span>
+              <span className="text-xs opacity-50">INCORRECTAS</span>
+            </div>
+            <div className="text-center p-4 border border-black">
+              <span className="block text-3xl font-bold">{sinResponder}</span>
+              <span className="text-xs opacity-50">SIN RESPONDER</span>
+            </div>
+            <div className="text-center p-4 border border-black">
+              <span className="block text-3xl font-bold">{puntajeTotal}</span>
+              <span className="text-xs opacity-50">PUNTAJE TOTAL</span>
+            </div>
+          </div>
+
+          {/* Información de la configuración */}
+          <div className="border-t border-gray-300 pt-4">
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+              <Settings size={18} /> CONFIGURACIÓN DEL QUIZ
+            </h2>
+            
+            <div className="space-y-2 text-sm">
+              <div className="grid grid-cols-2 gap-2">
+                <span className="opacity-50">Operaciones:</span>
+                <span className="font-bold">{operacionesTexto}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <span className="opacity-50">Cantidad de preguntas:</span>
+                <span className="font-bold">{config.cantidadPreguntas}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <span className="opacity-50">Dígitos:</span>
+                <span className="font-bold">{config.digitosMin} - {config.digitosMax}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <span className="opacity-50">Modo de respuesta:</span>
+                <span className="font-bold">
+                  {config.modoRespuesta === 'opciones' ? 'OPCIONES' : 'ESCRITURA'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <span className="opacity-50">Tiempo restante:</span>
+                <span className="font-bold text-green-600">
+                  {Math.floor(tiempoRestante / 60)}:{(tiempoRestante % 60).toString().padStart(2, '0')}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Botones de acción */}
+          <div className="grid grid-cols-2 gap-4 pt-4">
+            <button
+              onClick={onReiniciar}
+              className="p-4 bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors"
+            >
+              NUEVO QUIZ
+            </button>
+            <Link
+              to="/"
+              className="p-4 bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors text-center"
+            >
+              VOLVER AL INICIO
+            </Link>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+// Componente principal
+const CalculoMental = () => {
+  const [pantalla, setPantalla] = useState('configuracion'); // 'configuracion', 'quiz', 'estadisticas'
+  const [config, setConfig] = useState(null);
+  const [resultados, setResultados] = useState(null);
+  const [tiempoAgotado, setTiempoAgotado] = useState(false);
+
+  const manejarIniciar = (configuracion) => {
+    setConfig(configuracion);
+    setPantalla('quiz');
+    setTiempoAgotado(false);
+  };
+
+  const manejarTerminar = (resultadosQuiz) => {
+    setResultados(resultadosQuiz);
+    setPantalla('estadisticas');
+  };
+
+  const manejarTiempoAgotado = () => {
+    setTiempoAgotado(true);
+    // Forzar terminación con respuestas actuales
+    setPantalla('estadisticas');
+  };
+
+  const manejarReiniciar = () => {
+    setPantalla('configuracion');
+    setConfig(null);
+    setResultados(null);
+    setTiempoAgotado(false);
+  };
+
+  return (
+    <>
+      {pantalla === 'configuracion' && (
+        <PantallaConfiguracion onIniciar={manejarIniciar} />
+      )}
+
+      {pantalla === 'quiz' && config && (
+        <PantallaQuiz
+          config={config}
+          onTerminar={manejarTerminar}
+          onTiempoAgotado={manejarTiempoAgotado}
+        />
+      )}
+
+      {pantalla === 'estadisticas' && config && (
+        <PantallaEstadisticas
+          resultados={resultados || { respuestas: [], puntajeTotal: 0, tiempoRestante: 0 }}
+          config={config}
+          tiempoAgotado={tiempoAgotado}
+          onReiniciar={manejarReiniciar}
+        />
+      )}
+    </>
+  );
+};
+
+export default CalculoMental;
+</file>
+
+<file path="src/pages/LPC.jsx">
+import { useState, useRef, useEffect } from 'react';
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
+import Player from '../components/LPC/Player';
+import Playlist from '../components/LPC/Playlist';
+import Lyrics from '../components/LPC/Lyrics';
+import jsmediatags from "jsmediatags/dist/jsmediatags.min";
+
+// Define la URL base para LRCLIB
+const LRCLIB_API_URL = "https://lrclib.net/api";
+
+function LPC() {
+  const [playlist, setPlaylist] = useState([]);
+  const [currentSongIndex, setCurrentSongIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.5);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [tab, setTab] = useState('playlist');
+  const [lyricsMap, setLyricsMap] = useState({}); // {songId: { synced: [...], plain: "..." }}
+  const audioRef = useRef(null);
+  const currentAudioSrc = useRef(null);
+
+  // Reproducción
+  const togglePlay = () => {
+    if (playlist.length === 0) return;
+    setIsPlaying(!isPlaying);
+  };
+
+  const playNext = (auto = false) => {
+    if (currentSongIndex < playlist.length - 1) {
+      setCurrentSongIndex(currentSongIndex + 1);
+      setProgress(0);
+      setIsPlaying(auto); // solo auto-reproduce si viene de onEnded
+    }
+  };
+
+  const playPrevious = () => {
+    if (currentSongIndex > 0) {
+      setCurrentSongIndex(currentSongIndex - 1);
+      setProgress(0);
+      setIsPlaying(false); // cambio manual → pausa
+    }
+  };
+
+  // Efecto para cargar una nueva canción y reiniciar el progreso
+  useEffect(() => {
+    if (!audioRef.current || playlist.length === 0) return;
+    const song = playlist[currentSongIndex];
+    if (!song) return;
+
+    if (audioRef.current.src !== song.src) {
+      audioRef.current.src = song.src;
+      audioRef.current.load();
+      setProgress(0);
+      setDuration(0);
+    }
+  }, [currentSongIndex, playlist]);
+
+  // Efecto para reproducir/pausar
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      const tryPlay = () => {
+        audio.play().catch((e) => console.error("Error al reproducir el audio:", e));
+      };
+
+      if (audio.readyState >= 2) {
+        tryPlay();
+      } else {
+        audio.addEventListener('canplay', tryPlay, { once: true });
+      }
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying, currentSongIndex]);
+
+  // Efecto para actualizar el volumen
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const onTimeUpdate = () => setProgress(audio.currentTime);
+    const onLoadedMetadata = () => setDuration(audio.duration);
+    const onEnded = () => {
+      if (currentSongIndex < playlist.length - 1) {
+        setCurrentSongIndex(currentSongIndex + 1);
+        setProgress(0);
+        setIsPlaying(true);
+      } else {
+        setIsPlaying(false);
+      }
+    };
+
+    audio.volume = volume;
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+    audio.addEventListener('ended', onEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', onTimeUpdate);
+      audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+      audio.removeEventListener('ended', onEnded);
+    };
+  }, [volume, currentSongIndex, playlist]);
+
+  // Función para obtener las letras de LRCLIB
+  const fetchLyrics = async (song) => {
+    if (!song) return;
+    
+    // Aquí puedes usar la duración del audio para una mejor búsqueda si quieres
+    const duration = audioRef.current?.duration || 0; 
+    const query = new URLSearchParams({ 
+      track_name: song.title, 
+      artist_name: song.artist,
+      duration: Math.round(duration)
+    });
+
+    try {
+      const response = await fetch(`${LRCLIB_API_URL}/search?${query.toString()}`);
+      if (!response.ok) {
+        throw new Error('Error al buscar la letra');
+      }
+      const data = await response.json();
+      
+      const lyricsData = data.find(item => item.syncedLyrics && item.plainLyrics);
+      if (lyricsData) {
+        // La API de LRCLIB usa el formato LRC, que debemos parsear
+        const parsedSyncedLyrics = lyricsData.syncedLyrics.split('\n').map(line => {
+          const match = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\](.*)/);
+          if (match) {
+            const min = parseInt(match[1], 10);
+            const sec = parseInt(match[2], 10);
+            let ms = parseInt(match[3], 10);
+            if (match[3].length === 2) {
+              ms = ms * 10; // "03" → 300ms
+            }
+            return {
+              time: min * 60 + sec + ms / 1000,
+              text: match[4].trim(),
+            };
+          }
+          return null;
+        }).filter(Boolean);
+
+        const newLyrics = {
+          synced: parsedSyncedLyrics,
+          plain: lyricsData.plainLyrics,
+        };
+
+        setLyricsMap(lm => ({ ...lm, [song.id]: newLyrics }));
+      } else {
+        setLyricsMap(lm => ({ ...lm, [song.id]: { synced: [], plain: "No se encontró letra para esta canción." } }));
+      }
+    } catch (error) {
+      console.error("Error fetching lyrics from LRCLIB:", error);
+      setLyricsMap(lm => ({ ...lm, [song.id]: { synced: [], plain: "Error al cargar la letra." } }));
+    }
+  };
+
+  // Efecto para obtener las letras cuando la canción cambia
+  useEffect(() => {
+    if (playlist.length > 0) {
+      const currentSong = playlist[currentSongIndex];
+      if (currentSong && !lyricsMap[currentSong.id]) {
+        fetchLyrics(currentSong);
+      }
+    }
+  }, [currentSongIndex, playlist, lyricsMap]);
+
+  // Usar jsmediatags para metadatos
+  const handleFiles = async (e) => {
+    const files = Array.from(e.target.files);
+    const newSongs = await Promise.all(files.map(file => {
+      return new Promise((resolve) => {
+        jsmediatags.read(file, {
+          onSuccess: (tag) => {
+            let title = tag.tags.title || file.name;
+            let artist = tag.tags.artist || 'Desconocido';
+            let album = tag.tags.album || 'Desconocido';
+            let year = tag.tags.year || 'Desconocido';
+            let track = tag.tags.track || 'Desconocido';
+            let coverArt = null;
+            if (tag.tags.picture) {
+              const { data, format } = tag.tags.picture;
+              let base64String = "";
+              for (let i = 0; i < data.length; i++) {
+                base64String += String.fromCharCode(data[i]);
+              }
+              coverArt = `data:${format};base64,${btoa(base64String)}`;
+            }
+            resolve({
+              id: file.name + file.size,
+              title,
+              artist,
+              album,
+              year,
+              track,
+              file,
+              coverArt,
+              src: URL.createObjectURL(file)
+            });
+          },
+          onError: () => {
+            resolve({
+              id: file.name + file.size,
+              title: file.name,
+              artist: 'Desconocido',
+              album: 'Desconocido',
+              year: 'Desconocido',
+              track: 'Desconocido',
+              file,
+              coverArt: null
+            });
+          }
+        });
+      });
+    }));
+    setPlaylist((prev) => [...prev, ...newSongs]);
+  };
+
+  const handleDragEnd = ({ active, over }) => {
+    if (over && active.id !== over.id) {
+      setPlaylist((items) => {
+        const oldIndex = items.findIndex((song) => song.id === active.id);
+        const newIndex = items.findIndex((song) => song.id === over.id);
+        const newArray = arrayMove(items, oldIndex, newIndex);
+        if (oldIndex === currentSongIndex) {
+            setCurrentSongIndex(newIndex);
+        } else if (newIndex <= currentSongIndex && oldIndex > currentSongIndex) {
+            setCurrentSongIndex(currentSongIndex + 1);
+        } else if (newIndex >= currentSongIndex && oldIndex < currentSongIndex) {
+            setCurrentSongIndex(currentSongIndex - 1);
+        }
+        return newArray;
+      });
+    }
+  };
+
+  const handleSeek = (e) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = e.target.value;
+      setProgress(e.target.value);
+    }
+  };
+
+  const removeSong = (songId) => {
+    const songIndex = playlist.findIndex(song => song.id === songId);
+    if (songIndex > -1) {
+      const toRemove = playlist[songIndex];
+      if (toRemove?.src) URL.revokeObjectURL(toRemove.src);
+      const newPlaylist = playlist.filter(song => song.id !== songId);
+      setPlaylist(newPlaylist);
+      if (currentSongIndex === songIndex) {
+        if (newPlaylist.length > 0) {
+          setCurrentSongIndex(0);
+        } else {
+          setCurrentSongIndex(0);
+          setIsPlaying(false);
+          if (audioRef.current) audioRef.current.src = '';
+        }
+      } else if (currentSongIndex > songIndex) {
+        setCurrentSongIndex(currentSongIndex - 1);
+      }
+    }
+  };
+
+  const removeAllSongs = () => {
+    playlist.forEach(song => {
+      if (song.src) URL.revokeObjectURL(song.src);
+    });
+    setPlaylist([]);
+    setCurrentSongIndex(0);
+    setIsPlaying(false);
+    if (audioRef.current) audioRef.current.src = '';
+  };
+
+  const moveSong = (fromIndex, toIndex) => {
+    if (fromIndex < 0 || fromIndex >= playlist.length || toIndex < 0 || toIndex >= playlist.length) return;
+    const newPlaylist = arrayMove(playlist, fromIndex, toIndex);
+    setPlaylist(newPlaylist);
+    if (currentSongIndex === fromIndex) {
+      setCurrentSongIndex(toIndex);
+    } else if (fromIndex < currentSongIndex && toIndex >= currentSongIndex) {
+      setCurrentSongIndex(currentSongIndex - 1);
+    } else if (fromIndex > currentSongIndex && toIndex <= currentSongIndex) {
+      setCurrentSongIndex(currentSongIndex + 1);
+    }
+  };
+
+  const currentSong = playlist[currentSongIndex];
+
+  const currentLyrics = currentSong ? lyricsMap[currentSong.id] : null;
+
+  return (
+    <>
+      {/* Contenedor del fondo (la imagen o el color) */}
+      <div
+        className={`
+          bg-cover
+          bg-center
+          fixed
+          w-screen
+          h-screen
+          transition-bg-image
+          duration-[2500ms]
+          ease-in-out
+          ${currentSong?.coverArt ? '' : 'bg-neutral-900'}
+        `}
+        style={currentSong?.coverArt ? { backgroundImage: `url('${currentSong.coverArt}')` } : {}}
+      />
+      {/* Contenedor de los filtros, superpuesto al fondo */}
+      <div
+        className={`
+          fixed
+          w-screen
+          h-screen
+          backdrop-blur-3xl
+          backdrop-brightness-50
+          backdrop-contrast-95
+        `}
+      />
+      <div className='flex flex-col lg:flex-row min-h-screen text-white gap-0 relative'>
+        <audio ref={audioRef} />
+        {/* Player 50% en desktop, 100% en móvil */}
+        <div className='w-full lg:w-1/2 flex flex-col h-auto lg:h-screen justify-center items-center px-4 lg:px-8 py-4 lg:py-8 order-2 lg:order-1'>
+          <Player
+            isPlaying={isPlaying}
+            playlist={playlist}
+            currentSongIndex={currentSongIndex}
+            togglePlay={togglePlay}
+            playNext={playNext}
+            playPrevious={playPrevious}
+            volume={volume}
+            setVolume={setVolume}
+            progress={progress}
+            duration={duration}
+            handleSeek={handleSeek}
+            noBg // para quitar fondo
+            tab={tab} // Pasar el estado tab como prop
+            setTab={setTab} // Pasar el setter de tab como prop
+          />
+        </div>
+        {/* Playlist/Lyrics 50% en desktop, 100% en móvil */}
+        <div className={`w-full lg:w-1/2 flex flex-col h-auto lg:h-screen items-center px-4 lg:px-8 py-4 lg:py-8 text-gray-300
+          ${tab === 'playlist' ? 'justify-start' : 'justify-center'} order-1 lg:order-2`}>
+          <div className="w-full max-w-3xl mx-auto">
+            <div className="w-full">
+              {tab==='playlist' ? (
+                <div className="flex flex-col justify-start h-full">
+                  <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <Playlist 
+                      playlist={playlist}
+                      currentSongIndex={currentSongIndex}
+                      setCurrentSongIndex={setCurrentSongIndex}
+                      setIsPlaying={setIsPlaying}
+                      handleFiles={handleFiles}
+                      removeSong={removeSong}
+                      moveSong={moveSong}
+                      removeAllSongs={removeAllSongs}
+                      lyrics={currentLyrics}
+                      setLyrics={(songId, lyricsArr) => setLyricsMap(lm => ({...lm, [songId]: lyricsArr}))}
+                      removeLyrics={(songId) => setLyricsMap(lm => {const copy={...lm};delete copy[songId];return copy;})}
+                    />
+                  </DndContext>
+                </div>
+              ) : (
+                <div className="flex flex-col justify-center h-full">
+                  <Lyrics 
+                    lyrics={lyricsMap[playlist[currentSongIndex]?.id] || { synced: [], plain: "Cargando letra..." }}
+                    progress={progress}
+                    onSeek={handleSeek}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+export default LPC;
+</file>
+
+<file path="index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <script type="text/javascript">
+      // Este script toma el parámetro de consulta y lo devuelve a la historia del navegador
+      (function(l) {
+        if (l.search[1] === '/' ) {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" sizes="57x57" href="/Flower.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>&lt; 🎕 &gt;</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+</file>
+
+<file path="tailwind.config.js">
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+
+    // Or if using `src` directory:
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        'sans': ['Inter', ...require('tailwindcss/defaultTheme').fontFamily.sans],
+        'merriweather': ['Courier Prime', ...require('tailwindcss/defaultTheme').fontFamily.sans],
+        'mono': ['JetBrains Mono', ...require('tailwindcss/defaultTheme').fontFamily.sans],
+      },
+      colors: {
+        almond: "#F2E5D7",
+        chestnut: "#9B423E",
+        blackbean: "#330B0B",
+        night: "#151515",
+      },
+      transitionProperty: {
+        'bg-image': 'background-image',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        fadeOut: {
+          '0%': { opacity: '1' },
+          '100%': { opacity: '0' },
+        },
+        blur: {
+          '0%, 100%': { filter: 'blur(1px)', opacity: '0.8' },
+          '50%': { filter: 'blur(1px)', opacity: '1' },
+        },
+        jerk: {
+          '50%': { left: '1px' },
+          '51%': { left: '0' },
+        },
+        jerkwhole: {
+          '40%': { opacity: '1', top: '0', left: '0', transform: 'scale(1, 1) skew(0, 0)' },
+          '41%': { opacity: '0.8', top: '0px', left: '-100px', transform: 'scale(1, 1.2) skew(50deg, 0)' },
+          '42%': { opacity: '0.8', top: '0px', left: '100px', transform: 'scale(1, 1.5) skew(-60deg, 0)' },
+          '43%': { opacity: '1', top: '0', left: '0', transform: 'scale(1, 1) skew(0, 0)' },
+        },
+      },
+      animation: {
+        'fadeIn': 'fadeIn 0.5s ease-in-out forwards',
+        'fadeOut': 'fadeOut 0.5s ease-in-out forwards',
+        'blur': 'blur 30ms infinite',
+        'jerk': 'jerk 50ms infinite',
+        'jerkwhole': 'jerkwhole 5s infinite',
+      },
+      boxShadow: {
+        'glow': '0 0px 20px rgba(255, 255, 255, 0.35), 0 0px 65px rgba(255, 255, 255, 0.2)',
+      },
+    },
+  },
+  plugins: [],
+}
+</file>
+
+<file path="src/pages/Pixels.jsx">
+import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router';
+import { ChevronLeft, Brush, Eraser, FileDown, FileUp, Trash, MoveDownRight, MoveDownLeft, MoveUpRight, MoveUpLeft } from 'lucide-react';
+
+const PixelArtCreator = () => {
+  // Colores disponibles
+  const colors = [
+    '#ED1C24', '#FF7F27', '#FCD404', '#00B300',
+    '#4CEAEF', '#3C50F0', '#6B50F6', '#EC1F80',
+    '#000000', '#444444', '#787878', '#FFFFFF',
+  ];
+  
+  // Estados
+  const [gridSize, setGridSize] = useState(16);
+  const [pixels, setPixels] = useState(() => Array(32 * 32).fill('#FFFFFF'));
+  const [selectedColor, setSelectedColor] = useState('#000000');
+  const [tool, setTool] = useState('pencil');
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [numberingMode, setNumberingMode] = useState('bottom-right');
+  const fileInputRef = useRef(null);
+  const gridRef = useRef(null);
+
+  // Obtener píxeles visibles para el tamaño actual
+  const getVisiblePixels = () => {
+    const visiblePixels = [];
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x < gridSize; x++) {
+        const index = y * 32 + x;
+        visiblePixels.push(pixels[index] || '#FFFFFF');
+      }
+    }
+    return visiblePixels;
+  };
+
+  // Efecto para detectar cuando se presiona la barra espaciadora
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.code === 'Space') {
+        setIsSpacePressed(true);
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      if (e.code === 'Space') {
+        setIsSpacePressed(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  // Efecto para prevenir el scroll en dispositivos táctiles
+  useEffect(() => {
+    const preventScroll = (e) => {
+      if (e.touches.length > 1) return; // Permitir zoom con dos dedos
+      e.preventDefault();
+    };
+
+    const gridElement = gridRef.current;
+    if (gridElement) {
+      gridElement.addEventListener('touchmove', preventScroll, { passive: false });
+    }
+
+    return () => {
+      if (gridElement) {
+        gridElement.removeEventListener('touchmove', preventScroll);
+      }
+    };
+  }, []);
+
+  
+
+  // Manejar cambio de tamaño de la cuadrícula
+  const handleGridSizeChange = (e) => {
+    const newSize = parseInt(e.target.value);
+    setIsResizing(true);
+    setGridSize(newSize);
+    
+    setTimeout(() => {
+      setIsResizing(false);
+    }, 50);
+  };
+
+  // Pintar un píxel
+  const paintPixel = (index, color) => {
+    const row = Math.floor(index / gridSize);
+    const col = index % gridSize;
+    const fullIndex = row * 32 + col;
+    
+    const newPixels = [...pixels];
+    newPixels[fullIndex] = color;
+    setPixels(newPixels);
+  };
+
+  // Manejar clic en un píxel
+  const handlePixelClick = (index, e) => {
+    if (e.type.includes('touch')) {
+      e.preventDefault();
+    }
+    
+    if (e.button === 2) {
+      e.preventDefault();
+      paintPixel(index, '#FFFFFF');
+      return;
+    }
+    
+    if (e.button === 0 || e.type.includes('touch')) {
+      const colorToUse = tool === 'eraser' ? '#FFFFFF' : selectedColor;
+      paintPixel(index, colorToUse);
+    }
+  };
+
+  // Manejar movimiento del mouse sobre los píxeles (solo con barra espaciadora)
+  const handlePixelMouseOver = (index, e) => {
+    // Eliminar completamente la condición e.buttons === 1
+    if (isSpacePressed) {
+      const colorToUse = tool === 'eraser' ? '#FFFFFF' : selectedColor;
+      paintPixel(index, colorToUse);
+    }
+  };
+
+  // Manejar touch move para dispositivos móviles
+  const handleTouchMove = (e) => {
+    e.preventDefault();
+    
+    const touch = e.touches[0];
+    const gridElement = gridRef.current;
+    
+    if (!gridElement) return;
+    
+    const rect = gridElement.getBoundingClientRect();
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    
+    if (x >= 0 && y >= 0 && x < rect.width && y < rect.height) {
+      const pixelSize = rect.width / gridSize;
+      const col = Math.floor(x / pixelSize);
+      const row = Math.floor(y / pixelSize);
+      const index = row * gridSize + col;
+      
+      const colorToUse = tool === 'eraser' ? '#FFFFFF' : selectedColor;
+      paintPixel(index, colorToUse);
+    }
+  };
+
+  // Prevenir el menú contextual en click derecho
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+  };
+
+  // Limpiar toda la cuadrícula
+  const clearGrid = () => {
+    setPixels(Array(32 * 32).fill('#FFFFFF'));
+  };
+
+  // Exportar el diseño actual
+  const exportDesign = () => {
+    const visiblePixels = getVisiblePixels();
+    const data = {
+      gridSize,
+      pixels: visiblePixels
+    };
+    
+    const dataStr = JSON.stringify(data);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `pixel-art-${new Date().getTime()}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  // Importar un diseño
+  const importDesign = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedData = JSON.parse(event.target.result);
+        if (importedData.gridSize && importedData.pixels) {
+          setIsResizing(true);
+          setGridSize(importedData.gridSize);
+          
+          const newPixels = Array(32 * 32).fill('#FFFFFF');
+          const importSize = Math.min(importedData.gridSize, 32);
+          
+          for (let y = 0; y < importSize; y++) {
+            for (let x = 0; x < importSize; x++) {
+              const importIndex = y * importedData.gridSize + x;
+              const newIndex = y * 32 + x;
+              if (importIndex < importedData.pixels.length) {
+                newPixels[newIndex] = importedData.pixels[importIndex];
+              }
+            }
+          }
+          
+          setPixels(newPixels);
+          
+          setTimeout(() => {
+            setIsResizing(false);
+          }, 50);
+        } else {
+          alert('Archivo no válido');
+        }
+      } catch (error) {
+        alert('Error al importar el archivo');
+      }
+    };
+    reader.readAsText(file);
+    
+    e.target.value = null;
+  };
+
+  // Trigger para importar
+  const triggerImport = () => {
+    fileInputRef.current.click();
+  };
+
+  // Contar píxeles por color (solo los visibles)
+  const countPixelsByColor = () => {
+    const colorCount = {};
+    const visiblePixels = getVisiblePixels();
+    
+    visiblePixels.forEach(color => {
+      colorCount[color] = (colorCount[color] || 0) + 1;
+    });
+    
+    return colorCount;
+  };
+
+  // Obtener nombre del color basado en el código HEX
+  const getColorName = (hexCode) => {
+    const colorNames = {
+      '#ED1C24': 'Rojo',
+      '#FF7F27': 'Naranja',
+      '#FCD404': 'Amarillo',
+      '#00B300': 'Verde',
+      '#4CEAEF': 'Cyan',
+      '#3C50F0': 'Azul',
+      '#6B50F6': 'Morado',
+      '#EC1F80': 'Rosa',
+      '#000000': 'Negro',
+      '#444444': 'Gris',
+      '#787878': 'Gris Claro',
+      '#FFFFFF': 'Blanco'
+    };
+    
+    return colorNames[hexCode] || hexCode;
+  };
+
+  // Seleccionar herramienta
+  const selectTool = (selectedTool) => {
+    setTool(selectedTool);
+  };
+
+  // Cambiar modo de numeración
+  const cycleNumberingMode = () => {
+    const modes = ['disabled', 'bottom-right', 'bottom-left', 'top-right', 'top-left'];
+    const currentIndex = modes.indexOf(numberingMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    setNumberingMode(modes[nextIndex]);
+  };
+
+  // Obtener números para los lados según el modo (en espejo)
+  const getNumbersForSide = (side) => {
+    if (numberingMode === 'disabled') return [];
+    
+    const numbers = [];
+    const n = gridSize;
+
+    // ---- MODO: BOTTOM-RIGHT ----
+    if (numberingMode === 'bottom-right') {
+      if (side === 'bottom') {
+        // Abajo
+        for (let i = n; i >= 1; i--) numbers.push(i);
+      } else if (side === 'left') {
+        // Izquierda
+        for (let i = 2*n - 1; i >= n; i--) numbers.push(i);
+      } else if (side === 'top') {
+        // Arriba
+        for (let i = 2*n - 1; i >= n; i--) numbers.push(i);
+      } else if (side === 'right') {
+        // Derecha
+        for (let i = n; i >= 1; i--) numbers.push(i);
+      }
+    }
+
+    // ---- MODO: BOTTOM-LEFT ----
+    if (numberingMode === 'bottom-left') {
+      if (side === 'bottom') {
+        // Abajo
+        for (let i = 1; i <= n; i++) numbers.push(i);
+      } else if (side === 'right') {
+        // Derecha
+        for (let i = 2*n - 1; i >= n; i--) numbers.push(i);
+      } else if (side === 'top') {
+        // Arriba
+        for (let i = n; i <= 2*n - 1; i++) numbers.push(i);
+      } else if (side === 'left') {
+        // Izquierda
+        for (let i = n; i >= 1; i--) numbers.push(i);
+      }
+    }
+
+    // ---- MODO: TOP-RIGHT ----
+    if (numberingMode === 'top-right') {
+      if (side === 'top') {
+        // Arriba
+        for (let i = n; i >= 1; i--) numbers.push(i);
+      } else if (side === 'left') {
+        // Izquierda
+        for (let i = n; i <= 2*n - 1; i++) numbers.push(i);
+      } else if (side === 'bottom') {
+        // Abajo
+        for (let i = 2*n - 1; i >= n; i--) numbers.push(i);
+      } else if (side === 'right') {
+        // Derecha
+        for (let i = 1; i <= n; i++) numbers.push(i);
+      }
+    }
+
+    // ---- MODO: TOP-LEFT ----
+    if (numberingMode === 'top-left') {
+      if (side === 'top') {
+        // Arriba
+        for (let i = 1; i <= n; i++) numbers.push(i);
+      } else if (side === 'right') {
+        // Derecha
+        for (let i = n; i <= 2*n - 1; i++) numbers.push(i);
+      } else if (side === 'bottom') {
+        // Abajo
+        for (let i = n; i <= 2*n - 1; i++) numbers.push(i);
+      } else if (side === 'left') {
+        // Izquierda
+        for (let i = 1; i <= n; i++) numbers.push(i);
+      }
+    }
+
+    // Para lados verticales (izquierda/derecha), mostrar solo números alternados si gridSize > 23
+    if ((side === 'left' || side === 'right') && n > 23) {
+      return numbers.map((num, idx) => idx % 2 === 0 ? num : '');
+    }
+    
+    // Para lados horizontales (arriba/abajo), mostrar solo números alternados si gridSize > 23
+    if ((side === 'top' || side === 'bottom') && n > 23) {
+      return numbers.map((num, idx) => idx % 2 === 0 ? num : '');
+    }
+
+    return numbers;
+  };
+
+  // Función para determinar el tamaño de fuente según el gridSize
+  const getFontSizeClass = () => {
+    if (gridSize <= 16) return "text-xs";
+    if (gridSize <= 24) return "text-[8px]";
+    return "text-[8px]";
+  };
+
+  // Efecto para deshabilitar automáticamente la numeración en grids muy grandes
+  useEffect(() => {
+    if (gridSize > 28 && numberingMode !== 'disabled') {
+      setNumberingMode('disabled');
+    }
+  }, [gridSize, numberingMode]);
+
+  const fontSizeClass = getFontSizeClass();
+
+  // Obtener conteo de colores
+  const colorCount = countPixelsByColor();
+  const visiblePixels = getVisiblePixels();
+
+  // Obtener números para cada lado
+  const bottomNumbers = getNumbersForSide('bottom');
+  const rightNumbers = getNumbersForSide('right');
+  const topNumbers = getNumbersForSide('top');
+  const leftNumbers = getNumbersForSide('left');
+
+  return (
+    <>
+      <div className="fixed w-screen h-screen -z-10 bg-neutral-900" onContextMenu={handleContextMenu}/>
+      <div className="max-w-6xl mx-auto min-h-dvh text-neutral-100 p-3 md:p-4 lg:p-6 overflow-x-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+          {/* Panel de controles */}
+          <div className="col-span-1 bg-neutral-800 p-4 md:p-6 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between w-full mb-3">
+              <Link
+                to="/"
+                className="btn btn-sm btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+              >
+                <ChevronLeft/>
+              </Link>
+            </div>
+            
+            {/* Selector de tamaño */}
+            <div className="form-control mb-4 md:mb-6 w-full">
+              <div className="flex justify-between">
+                <h3 className="text-lg font-semibold text-neutral-300">Tamaño:</h3>
+                <label className="label">
+                  <span className="label-text text-neutral-300">{gridSize}x{gridSize}</span>
+                </label>
+              </div>
+              <input 
+                type="range" 
+                min="8" 
+                max="32" 
+                value={gridSize} 
+                onChange={handleGridSizeChange}
+                className="range range-almond w-full [--range-thumb:transparent] [--range-thumb-size:0.75rem]"
+              />
+              <div className="w-full flex justify-between text-sm px-2 text-neutral-400">
+                <span>8</span>
+                <span>20</span>
+                <span>32</span>
+              </div>
+            </div>
+            
+            {/* Selector de herramientas */}
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-neutral-300">Herramientas:</h3>
+              <div className="flex gap-2">
+                <button
+                  className={`btn transition-all duration-300 flex-1 ${tool === 'pencil' ? 'btn-almond' : 'glass text-almond hover:bg-almond/10'}`}
+                  onClick={() => selectTool('pencil')}
+                >
+                  <Brush size={20} className="md:size-6"/>
+                </button>
+                <button
+                  className={`btn transition-all duration-300 flex-1 ${tool === 'eraser' ? 'btn-almond' : 'glass text-almond hover:bg-almond/10'}`}
+                  onClick={() => selectTool('eraser')}
+                >
+                  <Eraser size={20} className="md:size-6"/>
+                </button>
+              </div>
+            </div>
+            
+            {/* Selector de color */}
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-neutral-300">Colores:</h3>
+              <div className="grid grid-cols-4 gap-2">
+                {colors.map((color, index) => (
+                  <div
+                    key={index}
+                    className={`w-full aspect-square rounded cursor-pointer outline-1 ${selectedColor === color ? 'outline-almond outline-3 outline-offset-2' : 'outline-neutral-600'}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => {
+                      setSelectedColor(color);
+                      setTool('pencil');
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            {/* Botón para cambiar modo de numeración */}
+            <div className="mb-4 md:mb-6">
+              <h3 className="text-lg font-semibold mb-2 text-neutral-300">Numeración:</h3>                 
+              <button 
+                className={`btn ${numberingMode !== 'disabled' ? 'btn-almond' : 'glass text-almond hover:bg-almond/10'} w-full`}
+                onClick={cycleNumberingMode}
+              >
+                {numberingMode === 'disabled' && 'Desactivada'}
+                {numberingMode === 'bottom-right' && 
+                  <>
+                    <MoveDownRight size={18} className="md:size-5"/>
+                    <span className="hidden md:inline">Inferior-Derecha</span>
+                    <span className="md:hidden">Inf-Der</span>
+                  </>
+                }
+                {numberingMode === 'bottom-left' && 
+                  <>
+                    <MoveDownLeft size={18} className="md:size-5"/>
+                    <span className="hidden md:inline">Inferior-Izquierda</span>
+                    <span className="md:hidden">Inf-Izq</span>
+                  </>
+                }
+                {numberingMode === 'top-right' && 
+                  <>
+                    <MoveUpRight size={18} className="md:size-5"/>
+                    <span className="hidden md:inline">Superior-Derecha</span>
+                    <span className="md:hidden">Sup-Der</span>
+                  </>
+                }
+                {numberingMode === 'top-left' && 
+                  <>
+                    <MoveUpLeft size={18} className="md:size-5"/>
+                    <span className="hidden md:inline">Superior-Izquierda</span>
+                    <span className="md:hidden">Sup-Izq</span>
+                  </>
+                }
+              </button>
+            </div>
+            
+            {/* Botones de acción */}   
+            <div className="grid grid-cols-1 gap-2">
+              <button 
+                className="btn glass text-almond hover:bg-red-700 hover:text-almond"
+                onClick={clearGrid}
+              >
+                <Trash size={18} className="md:size-5"/>
+                <span>Limpiar</span>
+              </button>
+              
+              <button 
+                className="btn glass text-almond hover:bg-blue-700 hover:text-almond"
+                onClick={exportDesign}
+              >
+                <FileDown size={18} className="md:size-5"/>
+                <span>Exportar</span>
+              </button>
+              
+              <button 
+                className="btn glass text-almond hover:bg-green-700 hover:text-almond"
+                onClick={triggerImport}
+              >
+                <FileUp size={18} className="md:size-5"/>
+                <span>Importar</span>
+              </button>
+              
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={importDesign}
+                accept=".json"
+                className="hidden"
+              />
+            </div>
+          </div>
+          
+          {/* Cuadrícula de píxeles con números */}
+          <div className="col-span-1 lg:col-span-2 bg-neutral-800 p-4 md:p-6 rounded-lg shadow-lg flex flex-col items-center justify-center">
+            
+            <div className="relative w-full max-w-[400px] md:max-w-[500px] my-4 md:my-8 lg:my-16">
+              {/* Números del lado izquierdo */}
+              {numberingMode !== 'disabled' && (
+                <div className={`absolute -left-4 h-full flex flex-col justify-between ${fontSizeClass} font-mono text-neutral-400`}>
+                  {leftNumbers.map((number, i) => (
+                    <div 
+                      key={`left-${i}`} 
+                      className="flex items-center justify-center h-full"
+                      style={{ visibility: number ? 'visible' : 'hidden' }}
+                    >
+                      {number || '·'}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Números del lado derecho */}
+              {numberingMode !== 'disabled' && (
+                <div className={`absolute -right-4 h-full flex flex-col justify-between ${fontSizeClass} font-mono text-neutral-400`}>
+                  {rightNumbers.map((number, i) => (
+                    <div 
+                      key={`right-${i}`} 
+                      className="flex items-center justify-center h-full"
+                      style={{ visibility: number ? 'visible' : 'hidden' }}
+                    >
+                      {number || '·'}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Números de la parte superior */}
+              {numberingMode !== 'disabled' && (
+                <div className={`absolute -top-4 w-full flex justify-between ${fontSizeClass} font-mono text-neutral-400 px-0.5`}>
+                  {topNumbers.map((number, i) => (
+                    <div 
+                      key={`top-${i}`} 
+                      className="flex-1 text-center"
+                      style={{ visibility: number ? 'visible' : 'hidden' }}
+                    >
+                      {number || '·'}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Números de la parte inferior */}
+              {numberingMode !== 'disabled' && (
+                <div className={`absolute -bottom-4 w-full flex justify-between ${fontSizeClass} font-mono text-neutral-400 px-0.5`}>
+                  {bottomNumbers.map((number, i) => (
+                    <div 
+                      key={`bottom-${i}`} 
+                      className="flex-1 text-center"
+                      style={{ visibility: number ? 'visible' : 'hidden' }}
+                    >
+                      {number || '·'}
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Cuadrícula principal */}
+              <div 
+                ref={gridRef}
+                className="grid border-1 border-neutral-600 touch-none w-full"
+                style={{
+                  gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
+                  aspectRatio: '1/1',
+                  opacity: isResizing ? 0.8 : 1,
+                  transition: 'opacity 0.1s ease'
+                }}
+                onTouchMove={handleTouchMove}
+                onTouchStart={(e) => e.preventDefault()}
+              >
+                {visiblePixels.map((color, index) => (
+                  <div
+                    key={index}
+                    className="border border-neutral-700 cursor-pointer"
+                    style={{ backgroundColor: color }}
+                    onMouseDown={(e) => handlePixelClick(index, e)}
+                    onMouseOver={(e) => handlePixelMouseOver(index, e)}
+                    onTouchStart={(e) => handlePixelClick(index, e)}
+                    onContextMenu={handleContextMenu}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Panel de conteo de colores - Versión mejorada */}
+            <div className="mt-4 md:mt-6 p-3 md:p-4 bg-neutral-700 rounded-lg w-full">
+              <h3 className="text-lg font-semibold mb-2 text-neutral-300">Conteo:</h3>
+              <div className="max-h-32 overflow-y-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  {Object.entries(colorCount)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([color, count]) => (
+                      <div key={color} className="flex items-center justify-between py-1">
+                        <div className="flex items-center min-w-0 flex-1">
+                          <div 
+                            className="w-3 h-3 md:w-4 md:h-4 mr-2 border border-neutral-600 flex-shrink-0"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="text-sm text-neutral-300 truncate">
+                            {getColorName(color)}
+                          </span>
+                        </div>
+                        <span className="font-semibold text-sm text-neutral-300 ml-2 flex-shrink-0">
+                          {count}
+                        </span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default PixelArtCreator;
+</file>
+
+<file path="package.json">
+{
+  "name": "prlgnm",
+  "homepage": "https://solarnity.github.io",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "@appletosolutions/reactbits": "^1.0.3",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@react-three/fiber": "^9.7.0",
+    "@tailwindcss/vite": "^4.1.12",
+    "autoprefixer": "^10.4.21",
+    "framer-motion": "^12.23.12",
+    "gh-pages": "^6.3.0",
+    "jsmediatags": "^3.9.7",
+    "katex": "^0.16.44",
+    "lucide-react": "^0.540.0",
+    "motion": "^12.23.12",
+    "music-metadata-browser": "^2.5.11",
+    "postcss": "^8.5.6",
+    "prop-types": "^15.8.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-katex": "^3.1.0",
+    "react-markdown": "^10.1.0",
+    "react-router": "^7.8.2",
+    "tailwindcss": "^4.1.12",
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@types/jsmediatags": "^3.9.6",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "daisyui": "^5.0.50",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "vite": "^7.1.2"
+  }
+}
+</file>
+
+<file path="src/App.jsx">
+import React, { useState, useEffect } from "react";
+import { Link, BrowserRouter, Routes, Route, useLocation } from "react-router";
+import { Layers, Blocks, HomeIcon, Folder, Lock, Image, Hexagon, Calculator, FileQuestionMarkIcon } from 'lucide-react';
+
+import LPC from "./pages/LPC";
+import Pixels from "./pages/Pixels";
+import Terminal from "./pages/Terminal";
+import NotFound from "./pages/NotFound";
+import Cuestionario from "./pages/Cuestionario";
+import CalculoMental from "./pages/CalculoMental";
+import Secret from "./pages/Secret";
+import Digital from "./pages/Digital"; // Importamos el nuevo componente de la cuenta regresiva
+
+import SmokeBackground from "./effects/SmokeBackground";
+
+// Lista de navegación
+const navItems = [
+  {
+    title: 'Inicio',
+    id: 'inicio',
+    icon: <HomeIcon size={24} />,
+    blocked: true,
+  },
+  {
+    title: 'Proyectos',
+    id: 'proyectos',
+    icon: <Folder size={24} />,
+    blocked: false,
+  },
+  {
+    title: 'osámktky',
+    id: 'images',
+    icon: <Image size={24} />,
+    blocked: true,
+  },
+  {
+    title: 'otlkxtay',
+    id: 'infernus',
+    icon: <Hexagon size={24} />,
+    blocked: true,
+  },
+];
+
+// Lista de aplicaciones
+const appRoutes = [
+  {
+    title: 'LPC',
+    route: '/lpc',
+    icon: <Layers />,
+    status: 'v1.0',
+    description: 'Creador de Listening Parties',
+    blocked: false,
+  },
+  {
+    title: 'Pixels',
+    route: '/pixels',
+    icon: <Blocks />,
+    status: 'v1.0',
+    description: 'Pinta en una cuadrícula de píxeles',
+    blocked: false,
+  },
+  {
+    title: 'Cuestionario',
+    route: '/cuestionario',
+    icon: <FileQuestionMarkIcon />,
+    status: 'v1.0',
+    description: 'Importa tus preguntas y respuestas para practicar',
+    blocked: false,
+  },
+  {
+    title: 'Cálculo Mental',
+    route: '/calculo',
+    icon: <Calculator />,
+    status: 'v1.0',
+    description: 'Ejercita tu mente con operaciones matemáticas',
+    blocked: false,
+  },
+  {
+    title: '???',
+    route: '',
+    icon: <Hexagon />,
+    status: 'Pendiente',
+    description: '-',
+    blocked: true,
+  }
+];
+
+// Componente principal de la página de inicio
+function Home() {
+  const [activeTab, setActiveTab] = useState('proyectos');
+
+  const handleNavClick = (item) => {
+    if (!item.blocked) {
+      setActiveTab(item.id);
+    }
+  };
+
+  return (
+    <>
+      {/* Fondo de humo y texto */}
+      <div className="fixed inset-0 w-lvw h-lvh z-0 pointer-events-none">
+        <div className="fixed md:hidden">
+          <SmokeBackground
+            fadeInOut={true}
+            minOpacity={0.2}
+            maxOpacity={0.5}
+            numParticles={8}
+            direction="left"
+            origin="right"
+            movementIntensity={7}
+          />
+        </div>
+        
+        <div className="hidden md:block">
+          <SmokeBackground
+            fadeInOut={true}
+            minOpacity={0.2}
+            maxOpacity={0.5}
+            numParticles={35}
+            direction="left"
+            origin="right"
+            movementIntensity={10}
+          />
+        </div>
+        
+
+        {/* Efecto de grano */}
+        <img className="fixed overflow-hidden top-0 bottom-0 left-0 right-0 h-lvh w-lvw pointer-events-none z-10 mix-blend-color-dodge opacity-20" alt="background texture" src="/grunge.jpg" />
+      </div>
+
+      <div className="w-full h-full text-almond relative crt-effect">
+        
+        {/* Logo */}
+        <div className="flex items-center justify-center p-10 md:p-20">
+            <span className="text-2xl font-bold text-almond">
+              <img src="/Flower.ico" className="inline h-35 w-35 md:h-50 md:w-50 mr-2 -mt-1 animate-spin [animation-duration:20s]" alt="logo" />
+            </span>
+        </div>
+
+        {/* Barra de navegación con espacio a los lados */}
+        <div className="flex justify-center px-4 md:px-10 lg:px-40 xl:px-60 2xl:px-80 mb-8">
+          <div className="navbar p-2 w-full max-w-6xl relative">
+            <div className="flex justify-around w-full">
+              {navItems.map((item) => (
+                <button 
+                  key={item.id}
+                  className={`flex flex-col items-center px-2 py-1 md:px-4 md:py-2 rounded-md transition-all duration-300 relative ${
+                    activeTab === item.id 
+                      ? 'bg-almond/90 text-chestnut' 
+                      : item.blocked
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-almond/25'
+                  }`}
+                  onClick={() => handleNavClick(item)}
+                  disabled={item.blocked}
+                >
+                  {item.icon}
+                  <span className="text-xs md:text-sm font-semibold mt-1">{item.title}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Contenido dinámico */}
+        <div className="flex flex-col items-center px-4 md:px-10 lg:px-20 xl:px-40 2xl:px-60 pb-10">
+          <div className="w-full max-w-6xl">
+            {activeTab === 'proyectos' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {appRoutes.map(app => (
+                  <Link
+                    key={app.route}
+                    to={app.route}
+                    className={`bg-almond/10 backdrop-blur-sm rounded-md p-8 transition-all duration-500 ${
+                      app.blocked 
+                        ? 'opacity-70 cursor-not-allowed' 
+                        : 'hover:scale-[1.005] hover:shadow-xl hover:backdrop-blur-xl hover:bg-almond/15 hover:cursor-pointer'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center text-center mb-4">
+                      <div className="p-3 rounded-lg bg-almond/20 mb-4">
+                        {app.icon}
+                      </div>
+                      <h2 className="text-xl font-bold mb-2">{app.title}</h2>
+                      <p className="opacity-90 mb-3">{app.description}</p>
+                      {app.status && (
+                        <div className="badge badge-sm badge-outline rounded px-2 py-1">
+                          {app.status}
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+            
+            {/* Contenido para la pestaña de Inicio */}
+            {activeTab === 'inicio' && (
+              <div className="bg-almond/10 backdrop-blur-sm rounded-md p-8 text-center">
+                <div className="flex flex-col items-center">
+                  <HomeIcon size={48} className="mb-4 text-almond" />
+                  <h2 className="text-2xl font-bold mb-4">Bienvenido a la Colección de Aplicaciones</h2>
+                  <p className="text-lg mb-6">Selecciona "Proyectos" para explorar las aplicaciones disponibles.</p>
+                  <button 
+                    className="px-6 py-3 bg-almond/20 hover:bg-almond/30 rounded-lg transition-colors"
+                    onClick={() => setActiveTab('proyectos')}
+                  >
+                    Ver Proyectos
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Contenido para otras pestañas bloqueadas */}
+            {(activeTab === 'images' || activeTab === 'infernus' || activeTab === 'about') && (
+              <div className="bg-almond/10 backdrop-blur-sm rounded-md p-8 text-center">
+                <div className="flex flex-col items-center">
+                  <Lock size={48} className="mb-4 text-chestnut/70" />
+                  <h2 className="text-2xl font-bold mb-4">Contenido Bloqueado</h2>
+                  <button 
+                    className="px-6 py-3 bg-almond/20 hover:bg-almond/30 rounded-lg transition-colors"
+                    onClick={() => setActiveTab('proyectos')}
+                  >
+                    Volver a Proyectos
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const TitleManager = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const titles = {
+      '/': '< 🎕 >',
+      '/lpc': 'LPC',
+      '/pixels': 'Pixels',
+      '/plrgnm': '- 🎕 -',
+      '/cuestionario': 'Cuestionario',
+      '/calculo': 'Cálculo Mental',
+      '/secret': '???',
+      '/digitalremains': '???',
+    };
+
+    // Aplicamos el título o uno por defecto si no existe en la lista
+    document.title = titles[location.pathname] || '< 🎕 >';
+  }, [location]);
+
+  return null;
+};
+
+function App() {
+  return (
+    <BrowserRouter basename="/">
+      <TitleManager />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/lpc" element={<LPC />} />
+        <Route path="/pixels" element={<Pixels />} />
+        <Route path="/plrgnm" element={<Terminal />} />
+        <Route path="/cuestionario" element={<Cuestionario />} />
+        <Route path="/calculo" element={<CalculoMental />} />
+        <Route path="/secret" element={<Secret />} />
+        <Route path="/digitalremains" element={<Digital />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+</file>
+
+</files>

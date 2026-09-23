@@ -1,72 +1,49 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=IBM+Plex+Mono&display=swap');
 
 @import "tailwindcss";
 @plugin "daisyui";
-@plugin "daisyui/theme" {
-  name: "lp-creator";
-  default: true; /* set as default */
-  prefersdark: true; /* set as default dark mode (prefers-color-scheme:dark) */
-  color-scheme: light; /* color of browser-provided UI */
 
-  /* Colores base monocromáticos */
-  --color-base-100: #f8f8f8; /* Fondo principal gris claro */
-  --color-base-200: #e0e0e0; /* Elementos secundarios */
-  --color-base-300: #bdbdbd; /* Bordes o separadores */
-  --color-base-content: #222; /* Contenido oscuro sobre fondo claro */
-
-  /* border radius */
-  --radius-selector: 1rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0.5rem;
-  /* base sizes */
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  /* border size */
-  --border: 1px;
-  /* effects */
-  --depth: 1;
-  --noise: 0;
+@font-face {
+  font-family: 'TT2020 Style E';
+  src: url('/fonts/TT2020StyleE_Italic.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
 }
 
-@config "../tailwind.config.js";
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-merriweather: 'Courier Prime', 'Courier New', Courier, monospace;
+  --font-typewriter: 'TT2020 Style E', 'Courier New', Courier, monospace;
+  --font-comic: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
 
-.animate-fadeOut {
-  animation: fadeOut 1s ease-in-out forwards;
-  animation-delay: 2s;
+  --color-dark-bg: #121212;
+  --color-dark-surface: #181818;
+  --color-dark-elevated: #222222;
+  --color-dark-border: rgba(255, 255, 255, 0.08);
+  --color-accent-red: #E23F31;
+  --color-accent-red-hover: #f04e40;
+  --color-text-main: #FFFFFF;
+  --color-text-muted: #9E9E9E;
 }
 
-.text-outline {
-  color: black;
-  text-shadow: 
-    -2px -2px 0 #fff,
-    2px -2px 0 #fff,
-    -2px 2px 0 #fff,
-    2px 2px 0 #fff;
+:root {
+  color-scheme: dark;
 }
 
-.crt-effect::before {
-  content: ' ';
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 15;
-  pointer-events: none;
-  
-  /* Nuevo fondo y animación */
-  background-image:
-    /* Líneas de escaneo horizontales */
-    linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    /* Aberración cromática vertical */
-    linear-gradient(90deg, rgba(255, 0, 0, 0.025), rgba(0, 255, 0, 0.025), rgba(0, 0, 255, 0.025));
-  
-  /* Tamaños de las líneas */
-  background-size: 100% 4px, 4px 100%;
-  
-  /* Filtro de desenfoque y saturación */
-  filter: blur(0.5px) saturate(1.2);
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background-color: var(--color-dark-bg);
+  color: var(--color-text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.ink-crystallize {
+  filter: url(#ink-crystallize-filter);
+  will-change: filter;
 }

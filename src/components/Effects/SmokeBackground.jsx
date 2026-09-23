@@ -1,7 +1,5 @@
-// src/components/SmokeBackground.jsx
-
 import React, { useEffect, useRef } from "react";
-import smokeImageSource from "/smoke.webp";
+import smokeImageSource from "/images/smoke.webp";
 
 const SmokeBackground = ({
   classes = "bg-gradient-to-r from-chestnut from-20% to-blackbean",
@@ -11,8 +9,8 @@ const SmokeBackground = ({
   maxSize = 3000,
   minOpacity = 0.1,
   maxOpacity = 0.8,
-  minDuration = 10000, // Duración mínima en ms
-  maxDuration = 20000, // Duración máxima en ms
+  minDuration = 10000,
+  maxDuration = 20000,
   rotationSpeed = 0.002,
   fps = 24,
   canvasOpacity = 100,
@@ -20,7 +18,7 @@ const SmokeBackground = ({
   direction = "right",
   origin = "random",
   movementIntensity = 1.0,
-  fadeInOut = true // Si las partículas deben aparecer y desaparecer suavemente
+  fadeInOut = true
 }) => {
   const canvasRef = useRef(null);
   const particlesRef = useRef([]);
@@ -35,7 +33,6 @@ const SmokeBackground = ({
     const fpsInterval = 1000 / fps;
     let then = Date.now();
 
-    // Verificar si se debe reducir el movimiento
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (reducedMotionQuery.matches && !enableAnimation) return;
 
@@ -44,7 +41,6 @@ const SmokeBackground = ({
       canvas.height = window.innerHeight + 100;
     };
 
-    // Función para calcular posición inicial según el origen
     const getInitialPosition = (canvasWidth, canvasHeight) => {
       let x, y;
       
@@ -79,7 +75,6 @@ const SmokeBackground = ({
       return { x, y };
     };
 
-    // Clase de partícula con duración y opacidad relacionadas
     class Particle {
       constructor(image) {
         this.image = image;
@@ -88,23 +83,20 @@ const SmokeBackground = ({
         this.y = y;
         this.size = Math.random() * (maxSize - minSize) + minSize;
         
-        // Duración y opacidad relacionadas
         this.totalDuration = Math.random() * (maxDuration - minDuration) + minDuration;
         this.elapsedTime = 0;
         this.initialOpacity = Math.random() * (maxOpacity - minOpacity) + minOpacity;
         this.currentOpacity = fadeInOut ? 0 : this.initialOpacity;
-        this.fadeProgress = 0; // 0 a 1 para controlar fade in/out
+        this.fadeProgress = 0;
         
         this.rotation = Math.random() * Math.PI * 2;
         this.rotationSpeed = Math.random() * rotationSpeed;
         this.isAlive = true;
         
-        // Configurar dirección de movimiento
         this.setMovementDirection();
       }
       
       setMovementDirection() {
-        // Velocidad base ajustada por intensidad
         const baseSpeed = 0.5 * movementIntensity;
         
         switch (direction) {
@@ -132,40 +124,31 @@ const SmokeBackground = ({
       
       update(deltaTime) {
         if (!this.isAlive) return;
-        
         this.elapsedTime += deltaTime;
         this.rotation += this.rotationSpeed;
         this.x += this.speedX;
         this.y += this.speedY;
         
-        // Calcular progreso de vida (0 a 1)
         const lifeProgress = Math.min(1, this.elapsedTime / this.totalDuration);
         
-        // Gestionar fade in/out si está habilitado
         if (fadeInOut) {
           if (lifeProgress < 0.2) {
-            // Fade in durante los primeros 20% de la vida
             this.fadeProgress = lifeProgress / 0.2;
           } else if (lifeProgress > 0.8) {
-            // Fade out durante los últimos 20% de la vida
             this.fadeProgress = 1 - ((lifeProgress - 0.8) / 0.2);
           } else {
-            // Opacidad completa durante el 60% central
             this.fadeProgress = 1;
           }
           
           this.currentOpacity = this.initialOpacity * this.fadeProgress;
         } else {
-          // Sin fade, opacidad constante hasta el final
           this.currentOpacity = this.initialOpacity;
         }
         
-        // Comprobar si la partícula debe morir
         if (this.elapsedTime >= this.totalDuration || this.currentOpacity <= 0.01) {
           this.isAlive = false;
         }
         
-        // Reposicionar partículas que salen completamente del canvas
         const margin = 200;
         const isOffscreen = 
           this.x + this.size < -margin || 
@@ -185,19 +168,13 @@ const SmokeBackground = ({
         ctx.translate(this.x + this.size / 2, this.y + this.size / 2);
         ctx.rotate(this.rotation);
         ctx.globalAlpha = this.currentOpacity;
-
-        // Dibuja la imagen original de humo
         ctx.drawImage(this.image, -this.size / 2, -this.size / 2, this.size, this.size);
-
-        // Superpone un color sólido encima de la imagen
         ctx.globalCompositeOperation = "source-atop";
         ctx.fillStyle = smokeColor;
         ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
-
         ctx.restore();
       }
       
-      // Método para reiniciar la partícula
       reset() {
         const { x, y } = getInitialPosition(canvas.width, canvas.height);
         this.x = x;
@@ -221,7 +198,6 @@ const SmokeBackground = ({
     };
 
     const handleParticles = (deltaTime) => {
-      // Limpiar el canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       let particlesToRecycle = 0;
@@ -234,7 +210,6 @@ const SmokeBackground = ({
           particle.draw();
         } else {
           particlesToRecycle++;
-          // Reutilizar partícula en lugar de crear una nueva
           particle.reset();
         }
       }
@@ -252,7 +227,6 @@ const SmokeBackground = ({
       }
     };
 
-    // Carga de la imagen de humo y inicio de la animación
     if (!imageRef.current) {
       imageRef.current = new Image();
       imageRef.current.onload = () => {
@@ -262,13 +236,11 @@ const SmokeBackground = ({
           then = Date.now();
           animate();
         } else {
-          // Si la animación está deshabilitada, solo dibujar una vez
           handleParticles(0);
         }
       };
       imageRef.current.src = smokeImageSource;
     } else {
-      // Si la imagen ya está cargada, solo reiniciar
       resizeCanvas();
       init(imageRef.current);
       if (enableAnimation && !reducedMotionQuery.matches) {
@@ -282,21 +254,17 @@ const SmokeBackground = ({
     const handleResize = () => {
       const oldWidth = canvas.width;
       const oldHeight = canvas.height;
-
-      // Actualizar tamaño del canvas
       resizeCanvas();
 
       const widthRatio = canvas.width / oldWidth;
       const heightRatio = canvas.height / oldHeight;
 
-      // Escalar posiciones de las partículas en lugar de reiniciarlas
       for (let i = 0; i < particlesRef.current.length; i++) {
         const p = particlesRef.current[i];
         p.x *= widthRatio;
         p.y *= heightRatio;
       }
 
-      // Redibujar sin resetear
       handleParticles(0);
     };
 
@@ -326,7 +294,6 @@ const SmokeBackground = ({
     fadeInOut
   ]);
 
-  // Convertir el valor de opacidad a formato CSS válido
   const canvasOpacityValue = canvasOpacity / 100;
 
   return (

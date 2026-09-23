@@ -1,666 +1,271 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Link } from 'react-router';
-import { ChevronLeft, Brush, Eraser, FileDown, FileUp, Trash, MoveDownRight, MoveDownLeft, MoveUpRight, MoveUpLeft } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
+import LightRays from '../components/Effects/LightRays';
+import { PixelToolbar } from '../components/Pixels/PixelToolbar';
+import { PixelCanvas } from '../components/Pixels/PixelCanvas';
+import { PixelStats } from '../components/Pixels/PixelStats';
 
-const PixelArtCreator = () => {
-  // Colores disponibles
-  const colors = [
-    '#ED1C24', '#FF7F27', '#FCD404', '#00B300',
-    '#4CEAEF', '#3C50F0', '#6B50F6', '#EC1F80',
-    '#000000', '#444444', '#787878', '#FFFFFF',
-  ];
-  
-  // Estados
+const DEFAULT_COLORS = [
+  '#ED1C24', '#FF7F27', '#FCD404', '#00B300', '#4CEAEF', '#3C50F0',
+  '#6B50F6', '#EC1F80', '#000000', '#444444', '#787878', '#FFFFFF',
+];
+
+const COLOR_NAMES = {
+  '#ED1C24': 'Rojo',
+  '#FF7F27': 'Naranja',
+  '#FCD404': 'Amarillo',
+  '#00B300': 'Verde',
+  '#4CEAEF': 'Cyan',
+  '#3C50F0': 'Azul',
+  '#6B50F6': 'Morado',
+  '#EC1F80': 'Rosa',
+  '#000000': 'Negro',
+  '#444444': 'Gris',
+  '#787878': 'Gris Claro',
+  '#FFFFFF': 'Blanco'
+};
+
+const Pixels = () => {
   const [gridSize, setGridSize] = useState(16);
-  const [pixels, setPixels] = useState(() => Array(32 * 32).fill('#FFFFFF'));
+  const [gridOpacity, setGridOpacity] = useState(100);
+  const [pixels, setPixels] = useState(() => Array(16 * 16).fill('#FFFFFF'));
   const [selectedColor, setSelectedColor] = useState('#000000');
   const [tool, setTool] = useState('pencil');
-  const [isSpacePressed, setIsSpacePressed] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
   const [numberingMode, setNumberingMode] = useState('bottom-right');
+  const [isDrawing, setIsDrawing] = useState(false);
+
   const fileInputRef = useRef(null);
-  const gridRef = useRef(null);
 
-  // Obtener píxeles visibles para el tamaño actual
-  const getVisiblePixels = () => {
-    const visiblePixels = [];
-    for (let y = 0; y < gridSize; y++) {
-      for (let x = 0; x < gridSize; x++) {
-        const index = y * 32 + x;
-        visiblePixels.push(pixels[index] || '#FFFFFF');
+  // Redimensionar cuadrícula de forma limpia e instantánea
+  const handleGridSizeChange = (newSize) => {
+    setPixels((prevPixels) => {
+      const nextPixels = Array(newSize * newSize).fill('#FFFFFF');
+      const minDimension = Math.min(gridSize, newSize);
+
+      for (let y = 0; y < minDimension; y++) {
+        for (let x = 0; x < minDimension; x++) {
+          const oldIndex = y * gridSize + x;
+          const nextIndex = y * newSize + x;
+          nextPixels[nextIndex] = prevPixels[oldIndex] || '#FFFFFF';
+        }
       }
-    }
-    return visiblePixels;
-  };
-
-  // Efecto para detectar cuando se presiona la barra espaciadora
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.code === 'Space') {
-        setIsSpacePressed(true);
-      }
-    };
-
-    const handleKeyUp = (e) => {
-      if (e.code === 'Space') {
-        setIsSpacePressed(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  // Efecto para prevenir el scroll en dispositivos táctiles
-  useEffect(() => {
-    const preventScroll = (e) => {
-      if (e.touches.length > 1) return; // Permitir zoom con dos dedos
-      e.preventDefault();
-    };
-
-    const gridElement = gridRef.current;
-    if (gridElement) {
-      gridElement.addEventListener('touchmove', preventScroll, { passive: false });
-    }
-
-    return () => {
-      if (gridElement) {
-        gridElement.removeEventListener('touchmove', preventScroll);
-      }
-    };
-  }, []);
-
-  
-
-  // Manejar cambio de tamaño de la cuadrícula
-  const handleGridSizeChange = (e) => {
-    const newSize = parseInt(e.target.value);
-    setIsResizing(true);
+      return nextPixels;
+    });
     setGridSize(newSize);
-    
-    setTimeout(() => {
-      setIsResizing(false);
-    }, 50);
   };
 
-  // Pintar un píxel
-  const paintPixel = (index, color) => {
-    const row = Math.floor(index / gridSize);
-    const col = index % gridSize;
-    const fullIndex = row * 32 + col;
-    
-    const newPixels = [...pixels];
-    newPixels[fullIndex] = color;
-    setPixels(newPixels);
-  };
+  const paintPixel = useCallback((index, overrideColor = null) => {
+    setPixels((prev) => {
+      const colorToUse = overrideColor ?? (tool === 'eraser' ? '#FFFFFF' : selectedColor);
+      if (prev[index] === colorToUse) return prev;
+      const copy = [...prev];
+      copy[index] = colorToUse;
+      return copy;
+    });
+  }, [tool, selectedColor]);
 
-  // Manejar clic en un píxel
-  const handlePixelClick = (index, e) => {
-    if (e.type.includes('touch')) {
-      e.preventDefault();
-    }
-    
+  useEffect(() => {
+    const handlePointerUp = () => setIsDrawing(false);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => window.removeEventListener('pointerup', handlePointerUp);
+  }, []);
+
+  const handlePixelPointerDown = (index, e) => {
+    e.preventDefault();
+    setIsDrawing(true);
     if (e.button === 2) {
-      e.preventDefault();
       paintPixel(index, '#FFFFFF');
       return;
     }
-    
-    if (e.button === 0 || e.type.includes('touch')) {
-      const colorToUse = tool === 'eraser' ? '#FFFFFF' : selectedColor;
-      paintPixel(index, colorToUse);
+    paintPixel(index);
+  };
+
+  const handlePixelPointerEnter = (index) => {
+    if (isDrawing) {
+      paintPixel(index);
     }
   };
 
-  // Manejar movimiento del mouse sobre los píxeles (solo con barra espaciadora)
-  const handlePixelMouseOver = (index, e) => {
-    // Eliminar completamente la condición e.buttons === 1
-    if (isSpacePressed) {
-      const colorToUse = tool === 'eraser' ? '#FFFFFF' : selectedColor;
-      paintPixel(index, colorToUse);
-    }
-  };
-
-  // Manejar touch move para dispositivos móviles
-  const handleTouchMove = (e) => {
-    e.preventDefault();
-    
-    const touch = e.touches[0];
-    const gridElement = gridRef.current;
-    
-    if (!gridElement) return;
-    
-    const rect = gridElement.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
-    
-    if (x >= 0 && y >= 0 && x < rect.width && y < rect.height) {
-      const pixelSize = rect.width / gridSize;
-      const col = Math.floor(x / pixelSize);
-      const row = Math.floor(y / pixelSize);
-      const index = row * gridSize + col;
-      
-      const colorToUse = tool === 'eraser' ? '#FFFFFF' : selectedColor;
-      paintPixel(index, colorToUse);
-    }
-  };
-
-  // Prevenir el menú contextual en click derecho
-  const handleContextMenu = (e) => {
-    e.preventDefault();
-  };
-
-  // Limpiar toda la cuadrícula
   const clearGrid = () => {
-    setPixels(Array(32 * 32).fill('#FFFFFF'));
+    setPixels(Array(gridSize * gridSize).fill('#FFFFFF'));
   };
 
-  // Exportar el diseño actual
   const exportDesign = () => {
-    const visiblePixels = getVisiblePixels();
     const data = {
+      app: "Pixels",
+      version: "2.0",
+      createdAt: new Date().toISOString(),
       gridSize,
-      pixels: visiblePixels
+      gridOpacity,
+      pixels,
     };
-    
-    const dataStr = JSON.stringify(data);
-    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `pixel-art-${new Date().getTime()}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `pixel-art-${gridSize}x${gridSize}-${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
-  // Importar un diseño
   const importDesign = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const importedData = JSON.parse(event.target.result);
-        if (importedData.gridSize && importedData.pixels) {
-          setIsResizing(true);
-          setGridSize(importedData.gridSize);
-          
-          const newPixels = Array(32 * 32).fill('#FFFFFF');
-          const importSize = Math.min(importedData.gridSize, 32);
-          
-          for (let y = 0; y < importSize; y++) {
-            for (let x = 0; x < importSize; x++) {
-              const importIndex = y * importedData.gridSize + x;
-              const newIndex = y * 32 + x;
-              if (importIndex < importedData.pixels.length) {
-                newPixels[newIndex] = importedData.pixels[importIndex];
-              }
-            }
+        const json = JSON.parse(event.target.result);
+        if (json.gridSize && Array.isArray(json.pixels)) {
+          const importedSize = Number(json.gridSize);
+          setGridSize(importedSize);
+          if (json.gridOpacity !== undefined) {
+            setGridOpacity(Number(json.gridOpacity));
           }
-          
-          setPixels(newPixels);
-          
-          setTimeout(() => {
-            setIsResizing(false);
-          }, 50);
+          setPixels(json.pixels.slice(0, importedSize * importedSize));
         } else {
-          alert('Archivo no válido');
+          alert("Estructura de JSON no compatible");
         }
-      } catch (error) {
-        alert('Error al importar el archivo');
+      } catch {
+        alert("Error al leer el archivo JSON");
       }
     };
     reader.readAsText(file);
-    
     e.target.value = null;
   };
 
-  // Trigger para importar
-  const triggerImport = () => {
-    fileInputRef.current.click();
-  };
+  const triggerImport = () => fileInputRef.current?.click();
 
-  // Contar píxeles por color (solo los visibles)
-  const countPixelsByColor = () => {
-    const colorCount = {};
-    const visiblePixels = getVisiblePixels();
-    
-    visiblePixels.forEach(color => {
-      colorCount[color] = (colorCount[color] || 0) + 1;
-    });
-    
-    return colorCount;
-  };
-
-  // Obtener nombre del color basado en el código HEX
-  const getColorName = (hexCode) => {
-    const colorNames = {
-      '#ED1C24': 'Rojo',
-      '#FF7F27': 'Naranja',
-      '#FCD404': 'Amarillo',
-      '#00B300': 'Verde',
-      '#4CEAEF': 'Cyan',
-      '#3C50F0': 'Azul',
-      '#6B50F6': 'Morado',
-      '#EC1F80': 'Rosa',
-      '#000000': 'Negro',
-      '#444444': 'Gris',
-      '#787878': 'Gris Claro',
-      '#FFFFFF': 'Blanco'
-    };
-    
-    return colorNames[hexCode] || hexCode;
-  };
-
-  // Seleccionar herramienta
-  const selectTool = (selectedTool) => {
-    setTool(selectedTool);
-  };
-
-  // Cambiar modo de numeración
   const cycleNumberingMode = () => {
     const modes = ['disabled', 'bottom-right', 'bottom-left', 'top-right', 'top-left'];
-    const currentIndex = modes.indexOf(numberingMode);
-    const nextIndex = (currentIndex + 1) % modes.length;
-    setNumberingMode(modes[nextIndex]);
+    const nextIdx = (modes.indexOf(numberingMode) + 1) % modes.length;
+    setNumberingMode(modes[nextIdx]);
   };
 
-  // Obtener números para los lados según el modo (en espejo)
   const getNumbersForSide = (side) => {
     if (numberingMode === 'disabled') return [];
-    
-    const numbers = [];
     const n = gridSize;
+    let list = [];
 
-    // ---- MODO: BOTTOM-RIGHT ----
     if (numberingMode === 'bottom-right') {
-      if (side === 'bottom') {
-        // Abajo
-        for (let i = n; i >= 1; i--) numbers.push(i);
-      } else if (side === 'left') {
-        // Izquierda
-        for (let i = 2*n - 1; i >= n; i--) numbers.push(i);
-      } else if (side === 'top') {
-        // Arriba
-        for (let i = 2*n - 1; i >= n; i--) numbers.push(i);
-      } else if (side === 'right') {
-        // Derecha
-        for (let i = n; i >= 1; i--) numbers.push(i);
-      }
+      if (side === 'bottom') for (let i = n; i >= 1; i--) list.push(i);
+      else if (side === 'left') for (let i = 2 * n - 1; i >= n; i--) list.push(i);
+      else if (side === 'top') for (let i = 2 * n - 1; i >= n; i--) list.push(i);
+      else if (side === 'right') for (let i = n; i >= 1; i--) list.push(i);
+    } else if (numberingMode === 'bottom-left') {
+      if (side === 'bottom') for (let i = 1; i <= n; i++) list.push(i);
+      else if (side === 'right') for (let i = 2 * n - 1; i >= n; i--) list.push(i);
+      else if (side === 'top') for (let i = n; i <= 2 * n - 1; i++) list.push(i);
+      else if (side === 'left') for (let i = n; i >= 1; i--) list.push(i);
+    } else if (numberingMode === 'top-right') {
+      if (side === 'top') for (let i = n; i >= 1; i--) list.push(i);
+      else if (side === 'left') for (let i = n; i <= 2 * n - 1; i++) list.push(i);
+      else if (side === 'bottom') for (let i = 2 * n - 1; i >= n; i--) list.push(i);
+      else if (side === 'right') for (let i = 1; i <= n; i++) list.push(i);
+    } else if (numberingMode === 'top-left') {
+      if (side === 'top') for (let i = 1; i <= n; i++) list.push(i);
+      else if (side === 'right') for (let i = n; i <= 2 * n - 1; i++) list.push(i);
+      else if (side === 'bottom') for (let i = n; i <= 2 * n - 1; i++) list.push(i);
+      else if (side === 'left') for (let i = 1; i <= n; i++) list.push(i);
     }
 
-    // ---- MODO: BOTTOM-LEFT ----
-    if (numberingMode === 'bottom-left') {
-      if (side === 'bottom') {
-        // Abajo
-        for (let i = 1; i <= n; i++) numbers.push(i);
-      } else if (side === 'right') {
-        // Derecha
-        for (let i = 2*n - 1; i >= n; i--) numbers.push(i);
-      } else if (side === 'top') {
-        // Arriba
-        for (let i = n; i <= 2*n - 1; i++) numbers.push(i);
-      } else if (side === 'left') {
-        // Izquierda
-        for (let i = n; i >= 1; i--) numbers.push(i);
-      }
+    if (n > 24) {
+      return list.map((val, idx) => (idx % 2 === 0 ? val : ''));
     }
-
-    // ---- MODO: TOP-RIGHT ----
-    if (numberingMode === 'top-right') {
-      if (side === 'top') {
-        // Arriba
-        for (let i = n; i >= 1; i--) numbers.push(i);
-      } else if (side === 'left') {
-        // Izquierda
-        for (let i = n; i <= 2*n - 1; i++) numbers.push(i);
-      } else if (side === 'bottom') {
-        // Abajo
-        for (let i = 2*n - 1; i >= n; i--) numbers.push(i);
-      } else if (side === 'right') {
-        // Derecha
-        for (let i = 1; i <= n; i++) numbers.push(i);
-      }
-    }
-
-    // ---- MODO: TOP-LEFT ----
-    if (numberingMode === 'top-left') {
-      if (side === 'top') {
-        // Arriba
-        for (let i = 1; i <= n; i++) numbers.push(i);
-      } else if (side === 'right') {
-        // Derecha
-        for (let i = n; i <= 2*n - 1; i++) numbers.push(i);
-      } else if (side === 'bottom') {
-        // Abajo
-        for (let i = n; i <= 2*n - 1; i++) numbers.push(i);
-      } else if (side === 'left') {
-        // Izquierda
-        for (let i = 1; i <= n; i++) numbers.push(i);
-      }
-    }
-
-    // Para lados verticales (izquierda/derecha), mostrar solo números alternados si gridSize > 23
-    if ((side === 'left' || side === 'right') && n > 23) {
-      return numbers.map((num, idx) => idx % 2 === 0 ? num : '');
-    }
-    
-    // Para lados horizontales (arriba/abajo), mostrar solo números alternados si gridSize > 23
-    if ((side === 'top' || side === 'bottom') && n > 23) {
-      return numbers.map((num, idx) => idx % 2 === 0 ? num : '');
-    }
-
-    return numbers;
+    return list;
   };
 
-  // Función para determinar el tamaño de fuente según el gridSize
-  const getFontSizeClass = () => {
-    if (gridSize <= 16) return "text-xs";
-    if (gridSize <= 24) return "text-[8px]";
-    return "text-[8px]";
-  };
-
-  // Efecto para deshabilitar automáticamente la numeración en grids muy grandes
-  useEffect(() => {
-    if (gridSize > 28 && numberingMode !== 'disabled') {
-      setNumberingMode('disabled');
-    }
-  }, [gridSize, numberingMode]);
-
-  const fontSizeClass = getFontSizeClass();
-
-  // Obtener conteo de colores
-  const colorCount = countPixelsByColor();
-  const visiblePixels = getVisiblePixels();
-
-  // Obtener números para cada lado
-  const bottomNumbers = getNumbersForSide('bottom');
-  const rightNumbers = getNumbersForSide('right');
-  const topNumbers = getNumbersForSide('top');
-  const leftNumbers = getNumbersForSide('left');
+  // Contar píxeles omitiendo el fondo blanco
+  const colorCount = pixels.reduce((acc, c) => {
+    if (c.toUpperCase() !== '#FFFFFF') acc[c] = (acc[c] || 0) + 1;
+    return acc;
+  }, {});
 
   return (
-    <>
-      <div className="fixed w-screen h-screen -z-10 bg-neutral-900" onContextMenu={handleContextMenu}/>
-      <div className="max-w-6xl mx-auto min-h-dvh text-neutral-100 p-3 md:p-4 lg:p-6 overflow-x-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-          {/* Panel de controles */}
-          <div className="col-span-1 bg-neutral-800 p-4 md:p-6 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between w-full mb-3">
-              <Link
-                to="/"
-                className="btn btn-sm btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
-              >
-                <ChevronLeft/>
-              </Link>
-            </div>
-            
-            {/* Selector de tamaño */}
-            <div className="form-control mb-4 md:mb-6 w-full">
-              <div className="flex justify-between">
-                <h3 className="text-lg font-semibold text-neutral-300">Tamaño:</h3>
-                <label className="label">
-                  <span className="label-text text-neutral-300">{gridSize}x{gridSize}</span>
-                </label>
-              </div>
-              <input 
-                type="range" 
-                min="8" 
-                max="32" 
-                value={gridSize} 
-                onChange={handleGridSizeChange}
-                className="range range-almond w-full [--range-thumb:transparent] [--range-thumb-size:0.75rem]"
-              />
-              <div className="w-full flex justify-between text-sm px-2 text-neutral-400">
-                <span>8</span>
-                <span>20</span>
-                <span>32</span>
-              </div>
-            </div>
-            
-            {/* Selector de herramientas */}
-            <div className="mb-4 md:mb-6">
-              <h3 className="text-lg font-semibold mb-2 text-neutral-300">Herramientas:</h3>
-              <div className="flex gap-2">
-                <button
-                  className={`btn transition-all duration-300 flex-1 ${tool === 'pencil' ? 'btn-almond' : 'glass text-almond hover:bg-almond/10'}`}
-                  onClick={() => selectTool('pencil')}
-                >
-                  <Brush size={20} className="md:size-6"/>
-                </button>
-                <button
-                  className={`btn transition-all duration-300 flex-1 ${tool === 'eraser' ? 'btn-almond' : 'glass text-almond hover:bg-almond/10'}`}
-                  onClick={() => selectTool('eraser')}
-                >
-                  <Eraser size={20} className="md:size-6"/>
-                </button>
-              </div>
-            </div>
-            
-            {/* Selector de color */}
-            <div className="mb-4 md:mb-6">
-              <h3 className="text-lg font-semibold mb-2 text-neutral-300">Colores:</h3>
-              <div className="grid grid-cols-4 gap-2">
-                {colors.map((color, index) => (
-                  <div
-                    key={index}
-                    className={`w-full aspect-square rounded cursor-pointer outline-1 ${selectedColor === color ? 'outline-almond outline-3 outline-offset-2' : 'outline-neutral-600'}`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => {
-                      setSelectedColor(color);
-                      setTool('pencil');
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            
-            {/* Botón para cambiar modo de numeración */}
-            <div className="mb-4 md:mb-6">
-              <h3 className="text-lg font-semibold mb-2 text-neutral-300">Numeración:</h3>                 
-              <button 
-                className={`btn ${numberingMode !== 'disabled' ? 'btn-almond' : 'glass text-almond hover:bg-almond/10'} w-full`}
-                onClick={cycleNumberingMode}
-              >
-                {numberingMode === 'disabled' && 'Desactivada'}
-                {numberingMode === 'bottom-right' && 
-                  <>
-                    <MoveDownRight size={18} className="md:size-5"/>
-                    <span className="hidden md:inline">Inferior-Derecha</span>
-                    <span className="md:hidden">Inf-Der</span>
-                  </>
-                }
-                {numberingMode === 'bottom-left' && 
-                  <>
-                    <MoveDownLeft size={18} className="md:size-5"/>
-                    <span className="hidden md:inline">Inferior-Izquierda</span>
-                    <span className="md:hidden">Inf-Izq</span>
-                  </>
-                }
-                {numberingMode === 'top-right' && 
-                  <>
-                    <MoveUpRight size={18} className="md:size-5"/>
-                    <span className="hidden md:inline">Superior-Derecha</span>
-                    <span className="md:hidden">Sup-Der</span>
-                  </>
-                }
-                {numberingMode === 'top-left' && 
-                  <>
-                    <MoveUpLeft size={18} className="md:size-5"/>
-                    <span className="hidden md:inline">Superior-Izquierda</span>
-                    <span className="md:hidden">Sup-Izq</span>
-                  </>
-                }
-              </button>
-            </div>
-            
-            {/* Botones de acción */}   
-            <div className="grid grid-cols-1 gap-2">
-              <button 
-                className="btn glass text-almond hover:bg-red-700 hover:text-almond"
-                onClick={clearGrid}
-              >
-                <Trash size={18} className="md:size-5"/>
-                <span>Limpiar</span>
-              </button>
-              
-              <button 
-                className="btn glass text-almond hover:bg-blue-700 hover:text-almond"
-                onClick={exportDesign}
-              >
-                <FileDown size={18} className="md:size-5"/>
-                <span>Exportar</span>
-              </button>
-              
-              <button 
-                className="btn glass text-almond hover:bg-green-700 hover:text-almond"
-                onClick={triggerImport}
-              >
-                <FileUp size={18} className="md:size-5"/>
-                <span>Importar</span>
-              </button>
-              
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={importDesign}
-                accept=".json"
-                className="hidden"
-              />
-            </div>
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#0A0A0A] select-none">
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <LightRays
+          raysOrigin="top-center"
+          raysColor="#ffffff"
+          raysSpeed={0.7}
+          lightSpread={1.2}
+          rayLength={3}
+          followMouse={true}
+          mouseInfluence={0}
+          noiseAmount={0.3}
+          distortion={0}
+          className="custom-rays"
+          pulsating={false}
+          fadeDistance={1.4}
+          saturation={1.4}
+        />
+      </div>
+
+      <main className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-between px-4 sm:px-6 lg:px-8 pt-16 pb-6">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
+          <Link
+            to="/"
+            className="group flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-xs font-mono tracking-wider text-white/60 backdrop-blur-md transition-all duration-300 hover:border-white/[0.18] hover:bg-white/[0.08] hover:text-white"
+          >
+            <ArrowLeft size={14} className="transition-transform duration-300 group-hover:-translate-x-1" />
+          </Link>
+        </div>
+
+        {/* WORKSPACE: items-stretch para que la columna izquierda y derecha coincidan en altura total */}
+        <div className="my-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+          {/* Columna Izquierda: Toolbox */}
+          <div className="col-span-1 h-full">
+            <PixelToolbar
+              colors={DEFAULT_COLORS}
+              selectedColor={selectedColor}
+              setSelectedColor={setSelectedColor}
+              tool={tool}
+              setTool={setTool}
+              gridSize={gridSize}
+              setGridSize={handleGridSizeChange}
+              gridOpacity={gridOpacity}
+              setGridOpacity={setGridOpacity}
+              numberingMode={numberingMode}
+              cycleNumberingMode={cycleNumberingMode}
+              clearGrid={clearGrid}
+              exportDesign={exportDesign}
+              triggerImport={triggerImport}
+              fileInputRef={fileInputRef}
+              importDesign={importDesign}
+            />
           </div>
-          
-          {/* Cuadrícula de píxeles con números */}
-          <div className="col-span-1 lg:col-span-2 bg-neutral-800 p-4 md:p-6 rounded-lg shadow-lg flex flex-col items-center justify-center">
-            
-            <div className="relative w-full max-w-[400px] md:max-w-[500px] my-4 md:my-8 lg:my-16">
-              {/* Números del lado izquierdo */}
-              {numberingMode !== 'disabled' && (
-                <div className={`absolute -left-4 h-full flex flex-col justify-between ${fontSizeClass} font-mono text-neutral-400`}>
-                  {leftNumbers.map((number, i) => (
-                    <div 
-                      key={`left-${i}`} 
-                      className="flex items-center justify-center h-full"
-                      style={{ visibility: number ? 'visible' : 'hidden' }}
-                    >
-                      {number || '·'}
-                    </div>
-                  ))}
-                </div>
-              )}
 
-              {/* Números del lado derecho */}
-              {numberingMode !== 'disabled' && (
-                <div className={`absolute -right-4 h-full flex flex-col justify-between ${fontSizeClass} font-mono text-neutral-400`}>
-                  {rightNumbers.map((number, i) => (
-                    <div 
-                      key={`right-${i}`} 
-                      className="flex items-center justify-center h-full"
-                      style={{ visibility: number ? 'visible' : 'hidden' }}
-                    >
-                      {number || '·'}
-                    </div>
-                  ))}
-                </div>
-              )}
+          {/* Columna Derecha: Canvas + Stats */}
+          <div className="col-span-1 lg:col-span-2 flex flex-col items-center justify-between w-full h-full">
+            <PixelCanvas
+              gridSize={gridSize}
+              gridOpacity={gridOpacity}
+              pixels={pixels}
+              numberingMode={numberingMode}
+              leftNumbers={getNumbersForSide('left')}
+              rightNumbers={getNumbersForSide('right')}
+              topNumbers={getNumbersForSide('top')}
+              bottomNumbers={getNumbersForSide('bottom')}
+              onPixelPointerDown={handlePixelPointerDown}
+              onPixelPointerEnter={handlePixelPointerEnter}
+            />
 
-              {/* Números de la parte superior */}
-              {numberingMode !== 'disabled' && (
-                <div className={`absolute -top-4 w-full flex justify-between ${fontSizeClass} font-mono text-neutral-400 px-0.5`}>
-                  {topNumbers.map((number, i) => (
-                    <div 
-                      key={`top-${i}`} 
-                      className="flex-1 text-center"
-                      style={{ visibility: number ? 'visible' : 'hidden' }}
-                    >
-                      {number || '·'}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Números de la parte inferior */}
-              {numberingMode !== 'disabled' && (
-                <div className={`absolute -bottom-4 w-full flex justify-between ${fontSizeClass} font-mono text-neutral-400 px-0.5`}>
-                  {bottomNumbers.map((number, i) => (
-                    <div 
-                      key={`bottom-${i}`} 
-                      className="flex-1 text-center"
-                      style={{ visibility: number ? 'visible' : 'hidden' }}
-                    >
-                      {number || '·'}
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {/* Cuadrícula principal */}
-              <div 
-                ref={gridRef}
-                className="grid border-1 border-neutral-600 touch-none w-full"
-                style={{
-                  gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-                  aspectRatio: '1/1',
-                  opacity: isResizing ? 0.8 : 1,
-                  transition: 'opacity 0.1s ease'
-                }}
-                onTouchMove={handleTouchMove}
-                onTouchStart={(e) => e.preventDefault()}
-              >
-                {visiblePixels.map((color, index) => (
-                  <div
-                    key={index}
-                    className="border border-neutral-700 cursor-pointer"
-                    style={{ backgroundColor: color }}
-                    onMouseDown={(e) => handlePixelClick(index, e)}
-                    onMouseOver={(e) => handlePixelMouseOver(index, e)}
-                    onTouchStart={(e) => handlePixelClick(index, e)}
-                    onContextMenu={handleContextMenu}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Panel de conteo de colores - Versión mejorada */}
-            <div className="mt-4 md:mt-6 p-3 md:p-4 bg-neutral-700 rounded-lg w-full">
-              <h3 className="text-lg font-semibold mb-2 text-neutral-300">Conteo:</h3>
-              <div className="max-h-32 overflow-y-auto">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {Object.entries(colorCount)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([color, count]) => (
-                      <div key={color} className="flex items-center justify-between py-1">
-                        <div className="flex items-center min-w-0 flex-1">
-                          <div 
-                            className="w-3 h-3 md:w-4 md:h-4 mr-2 border border-neutral-600 flex-shrink-0"
-                            style={{ backgroundColor: color }}
-                          />
-                          <span className="text-sm text-neutral-300 truncate">
-                            {getColorName(color)}
-                          </span>
-                        </div>
-                        <span className="font-semibold text-sm text-neutral-300 ml-2 flex-shrink-0">
-                          {count}
-                        </span>
-                      </div>
-                    ))
-                  }
-                </div>
-              </div>
-            </div>
-
+            <PixelStats 
+              colorCount={colorCount} 
+              getColorName={(hex) => COLOR_NAMES[hex] || hex} 
+            />
           </div>
         </div>
-      </div>
-    </>
+
+        {/* Footer */}
+        <footer className="mt-8 w-full pt-4 border-t border-white/[0.04] text-[#555555] text-xs font-mono text-center">
+          <p>PLGNM • {new Date().getFullYear()}</p>
+        </footer>
+      </main>
+    </div>
   );
 };
 
-export default PixelArtCreator;
+export default Pixels;

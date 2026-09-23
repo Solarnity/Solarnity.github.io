@@ -1,4 +1,4 @@
-export const VigenereCipher = (str, key, decrypt = false) => {
+export function VigenereCipher(str, key, decrypt = false) {
   if (!str || !key) return str;
   const keyStr = key.toLowerCase().replace(/[^a-z]/g, "");
   if (keyStr.length === 0) return str;
