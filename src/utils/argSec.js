@@ -10,7 +10,7 @@ export const CODE_HASHES = {
   9: "c1cdb12c153a6b211226c016691397af3f61b3d1f81b895e37f739e0483a95d9",
 };
 
-const STORAGE_KEY = "arg_secure_progress_v1";
+const STORAGE_KEY = "arg_secure_progress_v2";
 
 export async function hashString(str) {
   const encoder = new TextEncoder();
@@ -25,18 +25,13 @@ export function loadProgress() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-
-    if (parsed && typeof parsed === "object" && parsed.entries) {
-      const valid = [];
-      for (const [idStr, savedHash] of Object.entries(parsed.entries)) {
-        const id = Number(idStr);
-        if (CODE_HASHES[id] && CODE_HASHES[id] === savedHash) {
-          valid.push(id);
-        }
-      }
-      return valid.sort((a, b) => a - b);
+    
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map(Number)
+        .filter((id) => id >= 1 && id <= 9)
+        .sort((a, b) => a - b);
     }
-
     return [];
   } catch {
     return [];
@@ -45,11 +40,10 @@ export function loadProgress() {
 
 export function saveProgress(unlockedIds) {
   try {
-    const entries = {};
-    for (const id of unlockedIds) {
-      if (CODE_HASHES[id]) entries[id] = CODE_HASHES[id];
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ entries }));
+    const cleanList = Array.from(new Set(unlockedIds))
+      .map(Number)
+      .filter((id) => id >= 1 && id <= 9);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanList));
   } catch {}
 }
 
