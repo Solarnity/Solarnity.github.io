@@ -2,8 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { BorderGlowCard } from "../Effects/BorderGlowCard";
 import { Check, ShieldAlert } from "lucide-react";
 
-// SHA-256 de "018450"
-const EE_TARGET_SHA256 = "c8b32b5e976009e2506b08a8cd88b0bdf69a8f0d7b8588569cb55f427ce7afb5";
+const EE_AUTH_MAP = {
+  "c8b32b5e976009e2506b08a8cd88b0bdf69a8f0d7b8588569cb55f427ce7afb5": "/secret",
+  "bfd91bdf19ee29002aaafa789565321964ff6368f3d41a8cef68d58c76cbaf56": "/digitalremains",
+};
 
 const verifyEECodeSHA256 = async (codeStr) => {
   try {
@@ -12,9 +14,9 @@ const verifyEECodeSHA256 = async (codeStr) => {
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-    return hashHex === EE_TARGET_SHA256;
+    return EE_AUTH_MAP[hashHex] || null;
   } catch {
-    return false;
+    return null;
   }
 };
 
@@ -25,7 +27,7 @@ export const EEAuthCard = ({
   eeRedirectDelay = 1000,
 }) => {
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
-  const [status, setStatus] = useState("idle"); // "idle" | "success" | "error"
+  const [status, setStatus] = useState("idle");
   const inputsRef = useRef([]);
 
   useEffect(() => {
@@ -86,16 +88,16 @@ export const EEAuthCard = ({
   const handleValidate = async (candidateCode = digits.join("")) => {
     if (candidateCode.length < 6 || status === "success") return;
 
-    const isValid = await verifyEECodeSHA256(candidateCode);
+    const targetRoute = await verifyEECodeSHA256(candidateCode);
 
-    if (isValid) {
+    if (targetRoute) {
       setStatus("success");
       const audio = new Audio(eeSound);
       audio.currentTime = 0;
       audio.play().catch(() => {});
 
       setTimeout(() => {
-        onSuccess?.();
+        onSuccess?.(targetRoute);
       }, eeRedirectDelay);
     } else {
       setStatus("error");

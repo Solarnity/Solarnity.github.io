@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, AlertTriangle, Sparkles } from "lucide-react";
 
-const _0x9f = "aHR0cHM6Ly95b3V0dS5iZS9OSENBeUFnY050aw==";
+const _0x9f = "aHR0cHM6Ly93d3cueW91dHViZS5jb20vcGxheWxpc3Q/bGlzdD1QTEp6b3EteFFZdU5j";
 const getTargetUrl = () => atob(_0x9f);
 
 export const ProgressScreen = ({ unlocked = [], onResetProgress }) => {

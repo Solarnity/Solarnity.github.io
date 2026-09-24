@@ -405,7 +405,7 @@ export const CardWheel = ({
                     isCurrent={isCurrent}
                     eeSound={eeUnlockSound}
                     eeRedirectDelay={eeRedirectDelay}
-                    onSuccess={() => navigate(eeRoute)}
+                    onSuccess={(resolvedRoute) => navigate(resolvedRoute || eeRoute)}
                   />
                 </motion.div>
               ) : (

@@ -1,13 +1,13 @@
 export const CODE_HASHES = {
-  1: "04f856e8cb27739b388f906ed3cea03c2e233423b7c2086ead027a1bf80fe2a3",
-  2: "814e8dddce4730943f38fc53dc6443e43a7597be98418c6385d34e18a78929d3",
-  3: "1a89584a7ab6d121e565de8f7df4ababe940bf01bc7e6212a755fcb61f5f998d",
-  4: "954b485b2cae43f64b87b4a524918bee850f9ad84cb7d463ecf8e6635cfe6827",
-  5: "e45ff6f9f62050ae14af9ff3b78fa05833dcd963c15a9f2593dbc5d4dcc0a537",
-  6: "09cd933fd8134e4a312c2c3778a6e169cc0f60c77413ad8540fbcdc89dfb8c69",
-  7: "5d5a3d513d0c62f1d2ac5b0c9533dcd8dc0f4a22388d44ac4d71064f7476831d",
-  8: "6a9e32e9be79bb5de28f9da2f0c65586b30a1fe2f445e3e2379e0f8b727f5704",
-  9: "f64c85e73d9785a6a2e3b6eb86cb42364a9af05789fecac10b213016ca8a19f5",
+  1: "7eaa0d737f5245ea02b7e2fbde6ced36e943eed26bd956962db6dd22146d7d51",
+  2: "4d5f7f93445f09d2809b1deb12591ee8bdc5773cfa74dccdcc860c31a843a550",
+  3: "b26446d510c9ec61812773b518bac7e5b1570cb6e7a4aea096747c3e24eff278",
+  4: "acc0712cb0116d8ac18bf5050e07c13bf951e539e9a6688a851296362cb07658",
+  5: "9592589e06f5f6757e82aeaaeb23d9f5e661bfc0d7f5d79e6935c1f6a4f0df52",
+  6: "41ec0fb1da76944197bafccc29f068e486340e88006def588f3bc7cdf857225b",
+  7: "3bb5f466b36e266299062e7798de0cfd780d7f4ec8c2a9823161ed3f7f2fcd7c",
+  8: "395a4301c2f729c08cfdac330688a3bd97e2e6398728b175e1bd9fd8293590a8",
+  9: "c1cdb12c153a6b211226c016691397af3f61b3d1f81b895e37f739e0483a95d9",
 };
 
 const STORAGE_KEY = "arg_secure_progress_v1";
@@ -25,7 +25,19 @@ export function loadProgress() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+
+    if (parsed && typeof parsed === "object" && parsed.entries) {
+      const valid = [];
+      for (const [idStr, savedHash] of Object.entries(parsed.entries)) {
+        const id = Number(idStr);
+        if (CODE_HASHES[id] && CODE_HASHES[id] === savedHash) {
+          valid.push(id);
+        }
+      }
+      return valid.sort((a, b) => a - b);
+    }
+
+    return [];
   } catch {
     return [];
   }
@@ -33,7 +45,11 @@ export function loadProgress() {
 
 export function saveProgress(unlockedIds) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(unlockedIds));
+    const entries = {};
+    for (const id of unlockedIds) {
+      if (CODE_HASHES[id]) entries[id] = CODE_HASHES[id];
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ entries }));
   } catch {}
 }
 

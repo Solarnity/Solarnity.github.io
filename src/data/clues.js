@@ -2,49 +2,50 @@ export const defaultClues = [
   {
     "id": 1,
     "type": "image",
-    "content": "/images/clues/C1.png"
+    "content": "/images/clues/translateToATBASH.png"
   },
   {
     "id": 2,
     "type": "image",
-    "content": "/images/clues/C2.png"
+    "content": "/images/clues/reordenarCode.png"
   },
   {
     "id": 3,
-    "type": "image",
-    "content": "/images/clues/C3.png"
+    "type": "audio",
+    "content": "/sounds/espectro.mp3",
+    "hint": "attention: sons forts"
   },
   {
     "id": 4,
     "type": "image",
-    "content": "/images/clues/C4.png"
+    "content": "/images/clues/borraesto_2.png",
+    "hint": "URL -> X o R"
   },
   {
     "id": 5,
     "type": "image",
-    "content": "/images/clues/C5.png"
+    "content": "/images/clues/_4_4__4__.png",
+    "hint": "_ _ _ _ _ _ _ _ _"
   },
   {
     "id": 6,
-    "type": "text",
-    "content": "cual era mi nombre antes de ser el primero (2024)"
+    "type": "image",
+    "content": "/images/clues/brainfuck.png"
   },
   {
     "id": 7,
     "type": "image",
-    "content": "/images/clues/C7.gif",
-    "hint": "wHAT cAN'T i sEE"
+    "content": "/images/clues/page121.png"
   },
   {
     "id": 8,
     "type": "image",
-    "content": "/images/clues/C8.jpg",
-    "hint": "..."
+    "content": "/images/clues/A_B_C_D.png"
   },
   {
     "id": 9,
     "type": "image",
-    "content": "/images/clues/C9.png",
-    "hint": "what's my name"
+    "content": "/images/clues/TR__+__0___.png",
+    "hint": "TR__:______$"
   }
 ]

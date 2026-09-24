@@ -34,7 +34,6 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
   const [lastFound, setLastFound] = useState(null);
   const buttonControls = useAnimation();
 
-  // Completitud derivada del progreso real, no del status efímero
   const allCompleted = unlocked.length >= TOTAL_CODES;
 
   const shake = () =>
@@ -111,6 +110,10 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
     .filter(Boolean)
     .join(" ");
 
+  const ALLOWED_CHARS_REGEX = /[^a-zA-Z0-9!@#$%^&*:;.,?¿\-_=]/g;
+
+  const sanitizeCode = (value) => value.replace(ALLOWED_CHARS_REGEX, "");
+
   const renderIcon = () => {
     if (isSuccess) return <CircleCheckBig size={22} strokeWidth={2.5} />;
     if (isAlready) return <Repeat2 size={22} strokeWidth={2.5} />;
@@ -142,15 +145,17 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
             <input
               type="text"
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => setCode(sanitizeCode(e.target.value))}
               onKeyDown={handleKeyDown}
               placeholder="..."
               disabled={allCompleted}
+              maxLength={48}
+              autoComplete="off"
+              spellCheck={false}
               className="w-full rounded-xl border border-white/10 bg-white/[0.03] py-3 px-4 text-center font-mono text-sm uppercase tracking-widest text-white placeholder-white/20 outline-none transition-all focus:border-[#E23F31] focus:bg-white/[0.06] focus:shadow-[0_0_15px_rgba(226,63,49,0.2)] disabled:opacity-50"
             />
           </div>
 
-          {/* Un solo botón: validador o "ir a progreso" según completitud */}
           {!allCompleted ? (
             <motion.button
               type="button"

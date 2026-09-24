@@ -1,54 +1,47 @@
-import SmokeBackground from "../components/Effects/SmokeBackground";
 import { Link } from "react-router";
+import { ArrowLeft } from "lucide-react";
+import SideRays from "../components/Effects/SideRays";
 
 const NotFound = () => {
   return (
-    <>
-      {/* Fondo de humo y texto */}
-      <div className="fixed inset-0 w-lvw h-lvh z-0 pointer-events-none crt-effect">
-        <div className="fixed md:hidden">
-          <SmokeBackground
-            fadeInOut={true}
-            minOpacity={0.2}
-            maxOpacity={0.5}
-            numParticles={8}
-            direction="left"
-            origin="right"
-            movementIntensity={7}
-          />
-        </div>
-        
-        <div className="hidden md:block">
-          <SmokeBackground
-            fadeInOut={true}
-            minOpacity={0.2}
-            maxOpacity={0.5}
-            numParticles={35}
-            direction="left"
-            origin="right"
-            movementIntensity={10}
-          />
-        </div>
-        
-
-        {/* Efecto de grano */}
-        <img className="fixed overflow-hidden top-0 bottom-0 left-0 right-0 h-lvh w-lvw pointer-events-none z-10 mix-blend-color-dodge opacity-20" alt="background texture" src="/grunge.jpg" />
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#0A0A0A] select-none text-white">
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <SideRays
+          speed={2.5}
+          rayColor1="#E23F31"
+          rayColor2="#F4889A"
+          intensity={2.5}
+          spread={2}
+          origin="top-right"
+          tilt={0}
+          saturation={1.4}
+          blend={0.7}
+          falloff={0.5}
+          opacity={0.8}
+        />
       </div>
 
-      <div className="w-full h-full text-almond relative">
+      <div className="relative z-10 flex min-h-screen items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold mb-3 tracking-tight">Página no encontrada</h2>
+          <p className="text-sm text-white/50 leading-relaxed font-mono">
+            La página que buscas no existe o no tienes permiso para acceder.
+          </p>
 
-        {/* Contenedor principal centrado */}
-        <div className="flex items-center justify-center min-h-screen p-4">
-          <div className="text-center max-w-md">
-            <h2 className="text-xl font-bold mb-2">Página no encontrada</h2>
-            <p className="opacity-90">La página que buscas no existe o no tienes permiso para acceder.</p>
-            <Link to="/" className="btn glass text-almond mt-6">
-              Volver al inicio
+          <div className="mt-8 flex justify-center">
+            <Link
+              to="/"
+              className="group flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-5 py-2.5 text-xs font-mono tracking-wider text-white/70 backdrop-blur-md transition-all duration-300 hover:border-white/[0.18] hover:bg-white/[0.08] hover:text-white active:scale-95"
+            >
+              <ArrowLeft
+                size={14}
+                className="transition-transform duration-300 group-hover:-translate-x-1 text-white"
+              />
             </Link>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
