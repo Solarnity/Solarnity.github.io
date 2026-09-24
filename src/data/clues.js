@@ -18,13 +18,13 @@ export const defaultClues = [
   {
     "id": 4,
     "type": "image",
-    "content": "/images/clues/borraesto_2.png",
+    "content": "/images/clues/dejasoloelnumero2.png",
     "hint": "URL -> X o R"
   },
   {
     "id": 5,
     "type": "image",
-    "content": "/images/clues/_4_4__4__.png",
+    "content": "/images/clues/X4X4XX4XX.png",
     "hint": "_ _ _ _ _ _ _ _ _"
   },
   {
