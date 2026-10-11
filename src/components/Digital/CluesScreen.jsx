@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Volume2,
@@ -21,9 +22,6 @@ const playNavSound = () => {
   audio.play().catch(() => {});
 };
 
-/* ============================================================
-   MODAL DE PREVISUALIZACIÓN DE IMAGEN
-   ============================================================ */
 const ImagePreviewModal = ({ src, alt, onClose }) => {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -46,7 +44,6 @@ const ImagePreviewModal = ({ src, alt, onClose }) => {
     setPosition({ x: 0, y: 0 });
   };
 
-  // Cerrar con Escape
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") onClose();
@@ -58,14 +55,12 @@ const ImagePreviewModal = ({ src, alt, onClose }) => {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Zoom con la rueda del ratón
   const handleWheel = (e) => {
     e.preventDefault();
     if (e.deltaY < 0) zoomIn();
     else zoomOut();
   };
 
-  // Arrastrar cuando está zoomeado
   const handleMouseDown = (e) => {
     if (scale <= 1) return;
     draggingRef.current = true;
@@ -91,7 +86,7 @@ const ImagePreviewModal = ({ src, alt, onClose }) => {
     draggingRef.current = false;
   };
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -103,7 +98,6 @@ const ImagePreviewModal = ({ src, alt, onClose }) => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      {/* Botón de cierre */}
       <button
         type="button"
         onClick={(e) => {
@@ -116,7 +110,6 @@ const ImagePreviewModal = ({ src, alt, onClose }) => {
         <X size={18} />
       </button>
 
-      {/* Controles de zoom */}
       <div
         className="absolute bottom-6 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 backdrop-blur"
         onClick={(e) => e.stopPropagation()}
@@ -158,7 +151,6 @@ const ImagePreviewModal = ({ src, alt, onClose }) => {
         </button>
       </div>
 
-      {/* Imagen */}
       <div
         className="flex max-h-full max-w-full items-center justify-center overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -179,13 +171,11 @@ const ImagePreviewModal = ({ src, alt, onClose }) => {
           }}
         />
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 };
 
-/* ============================================================
-   REPRODUCTOR DE AUDIO
-   ============================================================ */
 const CustomAudioPlayer = ({ src, title }) => {
   const audioRef = useRef(null);
 
@@ -345,9 +335,6 @@ const CustomAudioPlayer = ({ src, title }) => {
   );
 };
 
-/* ============================================================
-   REPRODUCTOR DE VIDEO
-   ============================================================ */
 const CustomVideoPlayer = ({ src, title }) => {
   return (
     <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-white/[0.08] bg-black shadow-lg">
@@ -366,9 +353,6 @@ const CustomVideoPlayer = ({ src, title }) => {
   );
 };
 
-/* ============================================================
-   PANTALLA DE PISTAS
-   ============================================================ */
 export const CluesScreen = ({
   clues = defaultClues,
   unlocked = [],
@@ -512,7 +496,6 @@ export const CluesScreen = ({
         </AnimatePresence>
       </div>
 
-      {/* Modal de previsualización de imagen */}
       <AnimatePresence>
         {previewImage && (
           <ImagePreviewModal

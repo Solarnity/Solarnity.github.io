@@ -1,129 +1,117 @@
-// Lyrics.jsx
-import { useEffect, useRef, useState } from "react";
-import { LetterText, MicVocal } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
-export default function Lyrics({ lyrics, progress, onSeek }) {
-  const [activeTab, setActiveTab] = useState("synced");
-  const [currentIdx, setCurrentIdx] = useState(-1);
-  const [prevIdx, setPrevIdx] = useState(-1);
+const findCurrentLineIndex = (arr, t) => {
+  if (!arr || arr.length === 0) return -1;
+  let idx = -1;
+  for (let i = 0; i < arr.length; i++) {
+    if (t >= arr[i].time) idx = i;
+    else break;
+  }
+  return idx;
+};
 
-  const currentLineRef = useRef(null);
+const lineColor = (offset) => {
+  if (offset === 0) return '#ffffff';
+  if (offset < 0) return '#2b2b2b';
+  if (offset === 1) return '#5e5e5e';
+  if (offset === 2) return '#4b4b4b';
+  if (offset === 3) return '#3b3b3b';
+  return '#2f2f2f';
+};
+
+const isStatusMessage = (plain) =>
+  typeof plain === 'string' && plain.length < 60 && !plain.includes('\n');
+
+export default function Lyrics({ lyrics, progress, onSeek, label = 'Lyrics' }) {
+  const [mode, setMode] = useState('synced');
+  const [offset, setOffset] = useState(0);
+
   const containerRef = useRef(null);
+  const lineRefs = useRef([]);
 
-  const synced = Array.isArray(lyrics?.synced) ? lyrics.synced : [];
+  const synced = useMemo(
+    () => (Array.isArray(lyrics?.synced) ? lyrics.synced : []),
+    [lyrics]
+  );
+  const plain = lyrics?.plain || '';
+  const hasSynced = synced.length > 0;
+  const showSynced = hasSynced && mode === 'synced';
 
-  if (!lyrics) return <p className="text-center text-white">Cargando letra...</p>;
+  const currentIdx = useMemo(
+    () => findCurrentLineIndex(synced, progress),
+    [synced, progress]
+  );
 
-  const findCurrentLineIndex = (arr, t) => {
-    if (!arr || arr.length === 0) return -1;
-    let idx = -1;
-    for (let i = 0; i < arr.length; i++) {
-      if (t >= arr[i].time) idx = i;
-      else break;
-    }
-    return idx;
+  const recalc = () => {
+    const container = containerRef.current;
+    const el = lineRefs.current[Math.max(0, currentIdx)];
+    if (!container || !el) return;
+    setOffset(el.offsetTop - container.clientHeight * 0.28);
   };
 
-  // Se mueve la lógica de animación a un solo useEffect
+  useLayoutEffect(recalc, [currentIdx, synced, showSynced]);
+
+  const recalcRef = useRef(recalc);
+  recalcRef.current = recalc;
+
   useEffect(() => {
-    const idx = findCurrentLineIndex(synced, progress);
-    if (idx !== currentIdx) {
-      setPrevIdx(currentIdx);
-      setCurrentIdx(idx);
-    }
-  }, [progress, synced, currentIdx]);
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(() => recalcRef.current());
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
-  // Se centra visualmente la línea actual
-  useEffect(() => {
-    if (currentLineRef.current) {
-      currentLineRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  }, [currentIdx]);
-
-  const BASE = Math.max(0, currentIdx);
-  const STEP = 44;
-
-  const opacityFor = (offset) =>
-    offset === 0 ? 1 : offset === 1 ? 1 : offset === 2 ? 0.75 : offset === 3 ? 0.5 : 0.25;
+  const seekTo = (time) => {
+    onSeek?.({ target: { value: time } });
+  };
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-4 flex flex-col h-full">
-      <div className="tabs mb-4 flex justify-center lg:justify-start">
-        <button
-          className={`tab tab-bordered text-white [--color-base-content:text-white] ${activeTab === "plain" ? "tab-active" : ""}`}
-          onClick={() => setActiveTab("plain")}
-        >
-          <LetterText size={18} lg:size={24} />
-        </button>
-        <button
-          className={`tab tab-bordered text-white [--color-base-content:text-white] ${activeTab === "synced" ? "tab-active" : ""}`}
-          onClick={() => setActiveTab("synced")}
-        >
-          <MicVocal size={18} lg:size={24} />
-        </button>
+    <div className="flex h-full min-h-0 w-full flex-col">
+      <div className="flex shrink-0 items-center justify-center gap-3 pb-3 text-sm text-white">
+        <span>{label}</span>
+        {hasSynced && plain && (
+          <button
+            type="button"
+            onClick={() => setMode(mode === 'synced' ? 'plain' : 'synced')}
+            className="cursor-pointer rounded border border-white/20 px-1.5 text-[10px] uppercase tracking-wider text-white/60 transition-colors hover:border-white/50 hover:text-white"
+          >
+            {mode === 'synced' ? 'sync' : 'texto'}
+          </button>
+        )}
       </div>
 
-      <div className="tab-content flex-1 flex flex-col justify-center h-full">
-        {activeTab === "synced" ? (
-          <div ref={containerRef} className="relative h-[50vh] lg:h-[75vh] overflow-hidden p-4">
-            {synced.length > 0 ? (
-              <AnimatePresence>
-                {[0, 1, 2, 3, 4]
-                  .map((o) => BASE + o)
-                  .filter((i) => i >= 0 && i < synced.length)
-                  .map((i) => {
-                    const offset = i - BASE;
-                    const line = synced[i];
-                    const isMain = offset === 0;
-
-                    return (
-                      <motion.div
-                        ref={isMain ? currentLineRef : null}
-                        key={line.time}
-                        className="absolute left-0 right-0 text-left text-lg lg:text-2xl font-bold"
-                        style={{ top: "35%" }}
-                        initial={{ y: STEP * (offset + 1), opacity: 0 }}
-                        animate={{ y: STEP * offset, opacity: opacityFor(offset) }}
-                        exit={
-                          isMain
-                            ? { y: -STEP, opacity: 0, transition: { duration: 0.5, ease: "easeInOut" } }
-                            : { opacity: 0 }
-                        }
-                        transition={{ duration: 0.5, ease: "easeInOut" }}
-                      >
-                        <span
-                          className={
-                            isMain
-                              ? "text-white"
-                              : offset === 1
-                              ? "text-white/75"
-                              : offset === 2
-                              ? "text-white/50"
-                              : offset === 3
-                              ? "text-white/25"
-                              : "text-white/10"
-                          }
-                        >
-                          {line.text}
-                        </span>
-                      </motion.div>
-                    );
-                  })}
-              </AnimatePresence>
-            ) : (
-              <p className="italic text-gray-300 text-center">
-                No hay letra sincronizada para esta canción.
-              </p>
-            )}
+      <div
+        ref={containerRef}
+        className="relative min-h-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_85%,transparent)]"
+      >
+        {showSynced ? (
+          <div
+            className="absolute inset-x-0 top-0 transition-transform duration-500 ease-out will-change-transform"
+            style={{ transform: `translateY(${-offset}px)` }}
+          >
+            {synced.map((line, i) => (
+              <button
+                key={`${line.time}-${i}`}
+                ref={(el) => {
+                  lineRefs.current[i] = el;
+                }}
+                type="button"
+                onClick={() => seekTo(line.time)}
+                className="block w-full cursor-pointer py-2.5 text-left text-2xl font-bold leading-snug transition-colors duration-500 lg:py-3 lg:text-[2rem]"
+                style={{ color: lineColor(i - currentIdx) }}
+              >
+                {line.text || '♪'}
+              </button>
+            ))}
           </div>
+        ) : isStatusMessage(plain) || !plain ? (
+          <p className="flex h-full items-center justify-center px-4 text-center text-sm italic text-white/50">
+            {plain || 'No hay letra para esta canción.'}
+          </p>
         ) : (
-          <div className="h-[50vh] lg:h-[75vh] overflow-y-auto whitespace-pre-wrap text-white text-left p-4 rounded-lg text-sm lg:text-base">
-            {lyrics?.plain === "No se encontró letra para esta canción." ? (
-              <h2 className="italic text-center opacity-75">No se encontró letra para esta canción.</h2>
-            ) : (
-              lyrics?.plain || ""
-            )}
+          <div className="h-full overflow-y-auto whitespace-pre-wrap px-1 py-6 text-left text-lg font-semibold leading-relaxed text-white/80 lg:text-xl">
+            {plain}
           </div>
         )}
       </div>

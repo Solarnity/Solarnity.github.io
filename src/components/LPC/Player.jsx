@@ -1,8 +1,57 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, AudioLines, Mic, ListMusic, ChevronLeft } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+  AudioLines,
+  Mic,
+  ListMusic,
+} from 'lucide-react';
+
+export const formatTime = (time) => {
+  if (!time || isNaN(time)) return '00:00';
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+};
+
+export const ProgressBar = ({ progress, duration, onSeek, disabled, thin = false }) => {
+  const pct = duration ? Math.min(100, (progress / duration) * 100) : 0;
+  return (
+    <input
+      type="range"
+      className={`lpc-range ${thin ? 'lpc-range-thin' : ''}`}
+      style={{ '--pct': `${pct}%` }}
+      value={progress || 0}
+      max={duration || 0}
+      step="0.1"
+      onChange={onSeek}
+      disabled={disabled}
+      aria-label="Progreso"
+    />
+  );
+};
+
+const Cover = ({ song, className = '', iconSize = 96 }) =>
+  song?.coverArt ? (
+    <img
+      src={song.coverArt}
+      alt="Cover Art"
+      className={`aspect-square w-full object-cover ${className}`}
+    />
+  ) : (
+    <div
+      className={`flex aspect-square w-full items-center justify-center bg-[#222] ${className}`}
+    >
+      <AudioLines size={iconSize} className="text-white/60" />
+    </div>
+  );
 
 const Player = ({
+  variant = 'desktop',
   isPlaying,
   playlist,
   currentSongIndex,
@@ -14,155 +63,198 @@ const Player = ({
   progress,
   duration,
   handleSeek,
-  noBg,
   tab,
-  setTab
+  setTab,
 }) => {
   const currentSong = playlist[currentSongIndex];
-	const [isVolumeHovered, setIsVolumeHovered] = useState(false);
+  const [isVolumeHovered, setIsVolumeHovered] = useState(false);
+  const isMobile = variant === 'mobile';
 
-  const formatTime = (time) => {
-    if (isNaN(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+  const iconBtn =
+    'flex h-11 w-11 items-center justify-center rounded-full text-white transition-all duration-200 hover:scale-110 active:scale-95 disabled:pointer-events-none disabled:opacity-30 cursor-pointer';
+
+  if (isMobile) {
+    return (
+      <div className="mx-auto flex h-full w-full max-w-md flex-col justify-center gap-4 px-6 py-3 text-white">
+        <div
+          className="mx-auto w-full"
+          style={{ maxWidth: 'min(100%, 36dvh, 18rem)' }}
+        >
+          <Cover
+            song={currentSong}
+            className="rounded-xl shadow-[0_18px_50px_rgba(0,0,0,0.55)]"
+            iconSize={72}
+          />
+        </div>
+
+        <div className="min-w-0">
+          <h2 className="truncate text-lg font-bold leading-tight">
+            {currentSong ? currentSong.title : 'Sin canción'}
+          </h2>
+          <p className="truncate text-sm text-white/60">
+            {currentSong ? currentSong.artist : 'Agrega música desde la lista'}
+          </p>
+        </div>
+
+        <div>
+          <ProgressBar
+            progress={progress}
+            duration={duration}
+            onSeek={handleSeek}
+            disabled={!currentSong}
+          />
+          <div className="-mt-1 flex justify-between text-xs tabular-nums text-white/55">
+            <span>{formatTime(progress)}</span>
+            <span>{formatTime(duration)}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-8">
+          <button
+            onClick={playPrevious}
+            className={iconBtn}
+            disabled={currentSongIndex === 0 || playlist.length === 0}
+            aria-label="Anterior"
+          >
+            <SkipBack size={30} fill="currentColor" />
+          </button>
+          <button
+            onClick={togglePlay}
+            disabled={playlist.length === 0}
+            aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-black transition-transform active:scale-95 disabled:opacity-30 cursor-pointer"
+          >
+            {isPlaying ? (
+              <Pause size={28} fill="currentColor" />
+            ) : (
+              <Play size={28} fill="currentColor" className="translate-x-0.5" />
+            )}
+          </button>
+          <button
+            onClick={playNext}
+            className={iconBtn}
+            disabled={currentSongIndex === playlist.length - 1 || playlist.length === 0}
+            aria-label="Siguiente"
+          >
+            <SkipForward size={30} fill="currentColor" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      className="w-full h-full flex flex-col items-center justify-center text-white"
-    >
-      <div className="flex items-center justify-between w-full lg:w-[85%] lg:translate-y-[-170px] mb-4 lg:mb-0">
-        <Link
-          to="/"
-          className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
-        >
-          <ChevronLeft/>
-        </Link>
-      </div>
+    <div className="flex w-full max-w-[34rem] flex-col items-center text-white">
+      <div className="w-full text-center">
+        <h2 className="text-sm leading-tight lg:text-base">
+          {currentSong ? `Track ${currentSong.track}` : '\u00A0'}
+        </h2>
+        <h2 className="mb-4 truncate text-lg leading-tight lg:text-xl">
+          {currentSong ? currentSong.album : '\u00A0'}
+        </h2>
 
-      <div className="text-center w-full">
-        <h2 className='text-sm opacity-70'>
-          {currentSong ? `Track ${currentSong.track}` : ""}
-        </h2>
-        <h2 className="text-xl font-semibold mb-4">
-          {currentSong ? currentSong.album : ""}
-        </h2>
-        <div className={`flex w-full justify-center overflow-hidden mb-4 ${noBg ? '' : 'bg-white/10'}`}>
-          {currentSong && currentSong.coverArt ? (
-            <img 
-              src={currentSong.coverArt} 
-              alt="Cover Art" 
-              className="object-cover aspect-square rounded-lg max-w-[200px] lg:max-w-[300px]" 
-            />
-          ) : (
-            <div className="flex aspect-square max-w-[200px] lg:max-w-[300px] w-full justify-center items-center rounded-lg bg-white/10">
-              <AudioLines size={80} className="text-white lg:size-[120px]" />
-            </div>
-          )}
+        <div className="mx-auto mb-5 w-full" style={{ maxWidth: 'min(100%, 34cqh, 300px)' }}>
+          <Cover song={currentSong} className="rounded-lg" />
         </div>
-        <h2 className="text-2xl font-bold truncate px-4">
-          {currentSong ? currentSong.title : "-"}
+
+        <h2 className="truncate px-2 text-2xl font-bold leading-tight lg:text-3xl">
+          {currentSong ? currentSong.title : '-'}
         </h2>
-        <p className="text-sm opacity-70 mb-4 px-4">
-          {currentSong ? currentSong.artist : "-"}
+        <p className="mb-6 px-2 text-base lg:text-xl">
+          {currentSong ? currentSong.artist : '-'}
         </p>
       </div>
 
-      <div className="w-full flex items-center justify-center gap-4 mt-4 px-4">
-        <span className="text-sm lg:text-base">{formatTime(progress)}</span>
-        <input
-          type="range"
-          value={progress}
-          max={duration}
-          onChange={handleSeek}
-          className="range range-white w-[60%] lg:w-[70%] [--range-thumb:transparent] [--range-thumb-size:0.3rem]"
-          step="0.1"
-          disabled={!currentSong}
-        />
-        <span className="text-sm lg:text-base">{formatTime(duration)}</span>
+      <div className="flex w-full items-center gap-4">
+        <span className="shrink-0 text-sm tabular-nums">{formatTime(progress)}</span>
+        <div className="flex-1">
+          <ProgressBar
+            progress={progress}
+            duration={duration}
+            onSeek={handleSeek}
+            disabled={!currentSong}
+          />
+        </div>
+        <span className="shrink-0 text-sm tabular-nums">{formatTime(duration)}</span>
       </div>
 
-			{/* Contenedor principal de los controles */}
-      <div className="flex items-center justify-between w-full lg:w-[85%] mt-6 px-4 lg:px-0">
-        {/* Contenedor para el botón de volumen y su slider */}
+      <div className="mt-6 grid w-full grid-cols-3 items-center">
         <div
-          className="relative hidden lg:block"
+          className="relative flex justify-start"
           onMouseEnter={() => setIsVolumeHovered(true)}
           onMouseLeave={() => setIsVolumeHovered(false)}
         >
           <button
             onClick={() => setVolume(volume === 0 ? 0.15 : 0)}
-            className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+            className={iconBtn}
+            aria-label="Silenciar"
           >
-            {volume > 0 ? <Volume2 /> : <VolumeX />}
+            {volume > 0 ? (
+              <Volume2 size={28} fill="currentColor" />
+            ) : (
+              <VolumeX size={28} fill="currentColor" />
+            )}
           </button>
-          <div className="absolute left-full top-1/2 transform -translate-y-1/2 ml-3">
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={volume}
-              onChange={(e) => setVolume(parseFloat(e.target.value))}
-              className={`
-                transition-all duration-300 ease-in-out
-                ${isVolumeHovered ? 'w-24 opacity-100' : 'w-0 opacity-0 pointer-events-none'}
-                range range-white [--range-thumb:transparent] [--range-thumb-size:0.3rem]
-              `}
-            />
+          <div
+            className={`absolute bottom-full left-0 pb-2 transition-all duration-200 ${
+              isVolumeHovered ? 'opacity-100' : 'pointer-events-none translate-y-1 opacity-0'
+            }`}
+          >
+            <div className="w-28 rounded-full bg-[#262626] px-3 py-1.5 shadow-xl">
+              <input
+                type="range"
+                className="lpc-range lpc-range-thin"
+                style={{ '--pct': `${volume * 100}%` }}
+                min="0"
+                max="1"
+                step="0.01"
+                value={volume}
+                onChange={(e) => setVolume(parseFloat(e.target.value))}
+                aria-label="Volumen"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Contenedor de los botones de reproducción, ahora en el centro */}
-        <div className="flex items-center gap-4 lg:gap-6 w-full justify-center">
+        <div className="flex items-center justify-center gap-6">
           <button
             onClick={playPrevious}
-            className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+            className={iconBtn}
             disabled={currentSongIndex === 0 || playlist.length === 0}
+            aria-label="Anterior"
           >
-            <SkipBack size={20} className="lg:size-6" />
+            <SkipBack size={30} fill="currentColor" />
           </button>
           <button
             onClick={togglePlay}
-            className="btn btn-lg btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+            className={iconBtn}
             disabled={playlist.length === 0}
+            aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
           >
-            {isPlaying ? <Pause size={24} className="lg:size-8" /> : <Play size={24} className="lg:size-8" />}
+            {isPlaying ? (
+              <Pause size={34} fill="currentColor" />
+            ) : (
+              <Play size={34} fill="currentColor" />
+            )}
           </button>
           <button
             onClick={playNext}
-            className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+            className={iconBtn}
             disabled={currentSongIndex === playlist.length - 1 || playlist.length === 0}
+            aria-label="Siguiente"
           >
-            <SkipForward size={20} className="lg:size-6" />
+            <SkipForward size={30} fill="currentColor" />
           </button>
         </div>
 
-        <button
-          onClick={() => setTab(tab === 'playlist' ? 'lyrics' : 'playlist')}
-          className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 hidden lg:flex"
-        >
-          {tab === 'playlist' ? <Mic /> : <ListMusic />}
-        </button>
-
-        {/* Control de volumen para móvil */}
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="flex justify-end">
           <button
-            onClick={() => setVolume(volume === 0 ? 0.15 : 0)}
-            className="btn btn-ghost btn-square flex items-center justify-center shadow-none hover:border-transparent hover:bg-white/25 hover:text-gray-900 disabled:text-white/50"
+            onClick={() => setTab(tab === 'playlist' ? 'lyrics' : 'playlist')}
+            className={iconBtn}
+            aria-label={tab === 'playlist' ? 'Ver letra' : 'Ver lista'}
           >
-            {volume > 0 ? <Volume2 size={20} /> : <VolumeX size={20} />}
+            {tab === 'playlist' ? <Mic size={28} /> : <ListMusic size={28} />}
           </button>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="w-16 range range-white [--range-thumb:transparent] [--range-thumb-size:0.3rem]"
-          />
         </div>
       </div>
     </div>

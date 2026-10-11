@@ -2,9 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { BorderGlowCard } from "../Effects/BorderGlowCard";
 import { Check, ShieldAlert } from "lucide-react";
 
+const CODE_LENGTH = 4;
+
 const EE_AUTH_MAP = {
-  "c8b32b5e976009e2506b08a8cd88b0bdf69a8f0d7b8588569cb55f427ce7afb5": "/secret",
-  "bfd91bdf19ee29002aaafa789565321964ff6368f3d41a8cef68d58c76cbaf56": "/digitalremains",
+  "4e67c080014aa6295aa33d2b53b259e94999e7cbffd9da06bf4c6b45e593d877": "/secret",
+  "411b255e8c928b62eb7725b2ce97c600699944a1353e4bc895024cd08c7bc49d": "/digitalremains",
+  "152e69cf3c8e76c8d8b0aed924ddd1708e4c68624611af33d52c2c2814dd5df9": "/infernalized",
 };
 
 const verifyEECodeSHA256 = async (codeStr) => {
@@ -26,7 +29,7 @@ export const EEAuthCard = ({
   eeSound = "/sounds/magicClick.mp3",
   eeRedirectDelay = 1000,
 }) => {
-  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
+  const [digits, setDigits] = useState(Array(CODE_LENGTH).fill(""));
   const [status, setStatus] = useState("idle");
   const inputsRef = useRef([]);
 
@@ -43,7 +46,7 @@ export const EEAuthCard = ({
     newDigits[index] = cleanVal;
     setDigits(newDigits);
 
-    if (cleanVal && index < 5) {
+    if (cleanVal && index < CODE_LENGTH - 1) {
       inputsRef.current[index + 1]?.focus();
     }
   };
@@ -57,7 +60,7 @@ export const EEAuthCard = ({
     if (e.key === "ArrowLeft" && index > 0) {
       inputsRef.current[index - 1]?.focus();
     }
-    if (e.key === "ArrowRight" && index < 5) {
+    if (e.key === "ArrowRight" && index < CODE_LENGTH - 1) {
       inputsRef.current[index + 1]?.focus();
     }
     if (e.key === "Enter") {
@@ -68,25 +71,25 @@ export const EEAuthCard = ({
   const handlePaste = (e) => {
     if (status === "success") return;
     e.preventDefault();
-    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
     if (!pasteData) return;
 
     const newDigits = [...digits];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < CODE_LENGTH; i++) {
       newDigits[i] = pasteData[i] || "";
     }
     setDigits(newDigits);
 
-    const nextIndex = Math.min(pasteData.length, 5);
+    const nextIndex = Math.min(pasteData.length, CODE_LENGTH - 1);
     inputsRef.current[nextIndex]?.focus();
 
-    if (pasteData.length === 6) {
+    if (pasteData.length === CODE_LENGTH) {
       handleValidate(pasteData);
     }
   };
 
   const handleValidate = async (candidateCode = digits.join("")) => {
-    if (candidateCode.length < 6 || status === "success") return;
+    if (candidateCode.length < CODE_LENGTH || status === "success") return;
 
     const targetRoute = await verifyEECodeSHA256(candidateCode);
 
@@ -128,8 +131,7 @@ export const EEAuthCard = ({
           </p>
         </div>
 
-        {/* 6 inputs OTP */}
-        <div className="my-auto flex justify-center gap-2">
+        <div className="my-auto flex justify-center gap-3">
           {digits.map((digit, idx) => (
             <input
               key={idx}
@@ -145,7 +147,8 @@ export const EEAuthCard = ({
               onKeyDown={(e) => handleKeyDown(idx, e)}
               onPaste={handlePaste}
               onClick={(e) => e.stopPropagation()}
-              className={`h-12 w-10 rounded-xl border text-center text-lg font-mono font-bold outline-none transition-all duration-300
+              data-no-drag
+              className={`h-14 w-12 rounded-xl border text-center text-lg font-mono font-bold outline-none transition-all duration-300
                 ${
                   status === "success"
                     ? "border-emerald-500/50 bg-emerald-950/30 text-emerald-300"
@@ -160,7 +163,8 @@ export const EEAuthCard = ({
 
         <button
           type="button"
-          disabled={status === "success" || digits.join("").length < 6}
+          data-no-drag
+          disabled={status === "success" || digits.join("").length < CODE_LENGTH}
           onClick={(e) => {
             e.stopPropagation();
             handleValidate();

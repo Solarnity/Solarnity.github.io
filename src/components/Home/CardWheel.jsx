@@ -4,6 +4,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ProjectCard } from "./ProjectCard";
 import { EEAuthCard } from "./EEAuthCard";
 
+const DESIGN_HEIGHT = 430;
+
+const NO_DRAG_SELECTOR = "button, input, textarea, select, a, [data-no-drag]";
+
 const playAudioSafely = (src) => {
   if (!src) return;
   const audio = new Audio(src);
@@ -11,7 +15,6 @@ const playAudioSafely = (src) => {
   const playPromise = audio.play();
   if (playPromise !== undefined) {
     playPromise.catch(() => {
-      // Si el navegador bloqueó el audio en el evento wheel, lo reproduce al primer toque o interacción
       const unlockAudio = () => {
         audio.play().catch(() => {});
         window.removeEventListener("pointerdown", unlockAudio);
@@ -29,6 +32,7 @@ export const CardWheel = ({
   onChange,
   cardWidth = 340,
   spacing = 1.15,
+  mobileSpacing = 0.78,
 
   curve = 0.65,
   arc = 0.5,
@@ -43,6 +47,7 @@ export const CardWheel = ({
 
   loop = true,
   draggable = true,
+  showDots = true,
 
   eeTurnsRequired = 10,
   eeAppearSound = "/sounds/chipbell.mp3",
@@ -51,7 +56,8 @@ export const CardWheel = ({
   eeRedirectDelay = 1000,
   className = "",
 }) => {
-  const rootRef = useRef(null);
+  const outerRef = useRef(null);
+  const stageRef = useRef(null);
   const itemRefs = useRef([]);
   const posRef = useRef(defaultSelected);
   const targetRef = useRef(defaultSelected);
@@ -63,15 +69,26 @@ export const CardWheel = ({
   const wheelTimerRef = useRef(null);
   const dragRef = useRef(null);
   const dragMovedRef = useRef(false);
+  const scrollStepsRef = useRef(0);
+  const showEERef = useRef(false);
+  const itemsLenRef = useRef(items.length);
+  const eeTurnsRef = useRef(eeTurnsRequired);
+  const eeSoundRef = useRef(eeAppearSound);
+  const scaleRef = useRef(1);
 
   const [selectedIndex, setSelectedIndex] = useState(defaultSelected);
   const [isDragging, setIsDragging] = useState(false);
   const [showEE, setShowEE] = useState(false);
+  const [layout, setLayout] = useState({ scale: 1, spacing });
 
-  const scrollStepsRef = useRef(0);
   const navigate = useNavigate();
 
   onChangeRef.current = onChange;
+  showEERef.current = showEE;
+  itemsLenRef.current = items.length;
+  eeTurnsRef.current = eeTurnsRequired;
+  eeSoundRef.current = eeAppearSound;
+  scaleRef.current = layout.scale;
 
   const allItems = showEE ? [...items, { __isEE: true }] : items;
   const eeItemIndex = showEE ? items.length : -1;
@@ -79,7 +96,7 @@ export const CardWheel = ({
   cfgRef.current = {
     count: allItems.length,
     items: allItems,
-    cardW: Math.max(cardWidth * spacing, 1),
+    cardW: Math.max(cardWidth * layout.spacing, 1),
     curve,
     arc,
     depth,
@@ -92,6 +109,36 @@ export const CardWheel = ({
     smoothing,
     draggable,
   };
+
+  useEffect(() => {
+    const compute = () => {
+      const width = outerRef.current?.clientWidth || window.innerWidth;
+      const height = window.innerHeight;
+
+      const byWidth = (width * 0.78) / cardWidth;
+      const byHeight = Math.max(height - 300, 160) / DESIGN_HEIGHT;
+      const nextScale = Math.max(0.4, Math.min(1, byWidth, byHeight));
+      const nextSpacing = width < 640 ? mobileSpacing : spacing;
+
+      setLayout((prev) =>
+        Math.abs(prev.scale - nextScale) < 0.005 && prev.spacing === nextSpacing
+          ? prev
+          : { scale: nextScale, spacing: nextSpacing }
+      );
+    };
+
+    compute();
+    const observer =
+      typeof ResizeObserver !== "undefined" ? new ResizeObserver(compute) : null;
+    if (observer && outerRef.current) observer.observe(outerRef.current);
+    window.addEventListener("resize", compute);
+    window.addEventListener("orientationchange", compute);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", compute);
+      window.removeEventListener("orientationchange", compute);
+    };
+  }, [cardWidth, spacing, mobileSpacing]);
 
   const getWrappedDistance = useCallback((index, position, count) => {
     let distance = index - position;
@@ -128,7 +175,7 @@ export const CardWheel = ({
         const el = elements[i];
         if (!el) continue;
 
-        let distance = cfg.loop
+        const distance = cfg.loop
           ? getWrappedDistance(i, currentPos, count)
           : i - currentPos;
 
@@ -173,7 +220,7 @@ export const CardWheel = ({
         el.style.opacity = opacity.toFixed(3);
         el.style.filter = blurAmount > 0 ? `blur(${blurAmount.toFixed(2)}px)` : "none";
         el.style.zIndex = String(Math.round(1000 - absDistance * 50));
-        el.style.pointerEvents = absDistance <= visibleRadius ? "auto" : "none";
+        el.style.pointerEvents = absDistance <= Math.max(visibleRadius, 1) ? "auto" : "none";
       }
     },
     [getVisibleRadius, getWrappedDistance]
@@ -209,7 +256,7 @@ export const CardWheel = ({
   }, [runFrame]);
 
   const applyTarget = useCallback(
-    (value, snap = false) => {
+    (value, snap = false, immediate = false) => {
       const cfg = cfgRef.current;
       if (cfg.count === 0) return;
 
@@ -227,17 +274,60 @@ export const CardWheel = ({
         setSelectedIndex(index);
         onChangeRef.current?.(index, cfg.items[index]);
       }
-      startLoop();
+
+      if (immediate) {
+        if (rafRef.current !== null) {
+          cancelAnimationFrame(rafRef.current);
+          rafRef.current = null;
+        }
+        posRef.current = nextValue;
+        updateCardTransforms(nextValue);
+      } else {
+        startLoop();
+      }
     },
-    [startLoop]
+    [startLoop, updateCardTransforms]
   );
 
   useLayoutEffect(() => {
     updateCardTransforms(posRef.current);
-  }, [allItems.length, updateCardTransforms]);
+  }, [allItems.length, layout, updateCardTransforms]);
+
+  const revealEE = useCallback(() => {
+    if (showEERef.current) return;
+
+    const oldCount = itemsLenRef.current;
+    if (cfgRef.current.loop && oldCount > 0) {
+      const base = Math.round(posRef.current);
+      const normalizedBase = ((base % oldCount) + oldCount) % oldCount;
+      const shift = normalizedBase - base;
+      if (shift !== 0) {
+        posRef.current += shift;
+        targetRef.current += shift;
+        if (dragRef.current) {
+          dragRef.current.start += shift;
+          dragRef.current.lastValue += shift;
+        }
+      }
+    }
+
+    showEERef.current = true;
+    setShowEE(true);
+    playAudioSafely(eeSoundRef.current);
+  }, []);
+
+  const registerSteps = useCallback(
+    (amount) => {
+      if (showEERef.current || !amount) return;
+      scrollStepsRef.current += amount;
+      const required = Math.max(1, itemsLenRef.current) * Math.max(1, eeTurnsRef.current);
+      if (scrollStepsRef.current >= required) revealEE();
+    },
+    [revealEE]
+  );
 
   useEffect(() => {
-    const element = rootRef.current;
+    const element = stageRef.current;
     if (!element) return;
 
     const handleWheel = (event) => {
@@ -245,16 +335,8 @@ export const CardWheel = ({
       const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
       const step = Math.max(-1, Math.min(1, delta / 120));
 
+      registerSteps(Math.abs(step));
       applyTarget(targetRef.current + step, false);
-
-      scrollStepsRef.current += Math.abs(step);
-      const totalStepsRequired = Math.max(1, items.length) * Math.max(1, eeTurnsRequired);
-
-      if (!showEE && scrollStepsRef.current >= totalStepsRequired) {
-        setShowEE(true);
-        playAudioSafely(eeAppearSound);
-        startLoop();
-      }
 
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
       wheelTimerRef.current = setTimeout(() => {
@@ -267,37 +349,97 @@ export const CardWheel = ({
       element.removeEventListener("wheel", handleWheel);
       if (wheelTimerRef.current) clearTimeout(wheelTimerRef.current);
     };
-  }, [applyTarget, eeAppearSound, eeTurnsRequired, items.length, showEE, startLoop]);
+  }, [applyTarget, registerSteps]);
 
   const handlePointerDown = useCallback((event) => {
     if (!cfgRef.current.draggable) return;
-    dragRef.current = { x: event.clientX, start: targetRef.current, id: event.pointerId };
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    if (event.target.closest?.(NO_DRAG_SELECTOR)) return;
+
+    dragRef.current = {
+      x: event.clientX,
+      start: posRef.current,
+      lastValue: posRef.current,
+      lastX: event.clientX,
+      lastT: performance.now(),
+      velocity: 0,
+      id: event.pointerId,
+    };
     dragMovedRef.current = false;
-    setIsDragging(true);
   }, []);
 
   const handlePointerMove = useCallback(
     (event) => {
       const drag = dragRef.current;
-      if (!drag) return;
+      if (!drag || drag.id !== event.pointerId) return;
+
       const dx = event.clientX - drag.x;
-      if (!dragMovedRef.current && Math.abs(dx) > 5) {
+      if (!dragMovedRef.current && Math.abs(dx) > 6) {
         dragMovedRef.current = true;
-        rootRef.current?.setPointerCapture(drag.id);
+        setIsDragging(true);
+        try {
+          stageRef.current?.setPointerCapture(drag.id);
+        } catch {
+          /* noop */
+        }
       }
+      if (!dragMovedRef.current) return;
+
+      const now = performance.now();
+      const dt = now - drag.lastT;
+      if (dt > 0) drag.velocity = (event.clientX - drag.lastX) / dt;
+      drag.lastX = event.clientX;
+      drag.lastT = now;
+
+      const unit = scaleRef.current * cfgRef.current.cardW;
+      registerSteps(Math.abs(drag.start - dx / unit - drag.lastValue));
+      const next = drag.start - dx / unit;
+      drag.lastValue = next;
+      applyTarget(next, false, true);
+    },
+    [applyTarget, registerSteps]
+  );
+
+  const handlePointerEnd = useCallback(
+    (event) => {
+      const drag = dragRef.current;
+      if (!drag || (event && drag.id !== event.pointerId)) return;
+      dragRef.current = null;
+      setIsDragging(false);
+
+      try {
+        stageRef.current?.releasePointerCapture(drag.id);
+      } catch {
+        /* noop */
+      }
+
       if (dragMovedRef.current) {
-        applyTarget(drag.start - dx / cfgRef.current.cardW, false);
+        const unit = scaleRef.current * cfgRef.current.cardW;
+        const projected = (-drag.velocity / unit) * 160;
+        const flick = Math.max(-1, Math.min(1, projected));
+        applyTarget(Math.round(targetRef.current + flick), true);
+        setTimeout(() => {
+          dragMovedRef.current = false;
+        }, 0);
       }
     },
     [applyTarget]
   );
 
-  const handlePointerEnd = useCallback(() => {
-    if (!dragRef.current) return;
-    dragRef.current = null;
-    setIsDragging(false);
-    if (dragMovedRef.current) applyTarget(targetRef.current, true);
-  }, [applyTarget]);
+  const getCurrentIndex = () => {
+    const count = cfgRef.current.count;
+    return ((Math.round(targetRef.current) % count) + count) % count;
+  };
+
+  const getShortestDistance = (from, to) => {
+    const cfg = cfgRef.current;
+    let distance = to - from;
+    if (cfg.loop && cfg.count > 1) {
+      if (distance > cfg.count / 2) distance -= cfg.count;
+      else if (distance < -cfg.count / 2) distance += cfg.count;
+    }
+    return distance;
+  };
 
   const handleCardClick = useCallback(
     (index, route) => {
@@ -305,38 +447,55 @@ export const CardWheel = ({
       const cfg = cfgRef.current;
       if (!cfg.count) return;
 
-      const current = targetRef.current;
-      const currentIndex = ((Math.round(current) % cfg.count) + cfg.count) % cfg.count;
+      const currentIndex = getCurrentIndex();
 
       if (currentIndex === index) {
-        if (route && index !== eeItemIndex) {
-          navigate(route);
-        }
+        if (route && index !== eeItemIndex) navigate(route);
         return;
       }
 
-      let distance = index - currentIndex;
-      if (cfg.loop && cfg.count > 1) {
-        if (distance > cfg.count / 2) distance -= cfg.count;
-        else if (distance < -cfg.count / 2) distance += cfg.count;
-      }
+      const distance = getShortestDistance(currentIndex, index);
+      if (Math.abs(distance) !== 1) return;
 
-      applyTarget(current + distance, true);
+      applyTarget(Math.round(targetRef.current) + distance, true);
     },
     [applyTarget, eeItemIndex, navigate]
   );
 
-  const handleKeyDown = useCallback(
-    (event) => {
+  const goTo = useCallback(
+    (index) => {
+      const cfg = cfgRef.current;
+      if (!cfg.count) return;
+      const distance = getShortestDistance(getCurrentIndex(), index);
+      if (distance === 0) return;
+      applyTarget(Math.round(targetRef.current) + distance, true);
+    },
+    [applyTarget]
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
       let delta = null;
       if (event.key === "ArrowLeft" || event.key === "ArrowUp") delta = -1;
       if (event.key === "ArrowRight" || event.key === "ArrowDown") delta = 1;
       if (delta === null) return;
+
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.closest("input, textarea, select") || target.isContentEditable)
+      ) {
+        return;
+      }
+
       event.preventDefault();
+      registerSteps(1);
       applyTarget(Math.round(targetRef.current) + delta, true);
-    },
-    [applyTarget]
-  );
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [applyTarget, registerSteps]);
 
   useEffect(() => {
     const count = items.length;
@@ -362,65 +521,102 @@ export const CardWheel = ({
   }, []);
 
   return (
-    <div
-      ref={rootRef}
-      role="region"
-      tabIndex={0}
-      aria-label="Selector de Proyectos"
-      className={`relative flex h-[430px] w-full items-center justify-center overflow-visible select-none outline-none
-        [touch-action:none] [perspective:1400px] [perspective-origin:center_center] ${
+    <div ref={outerRef} className="w-full">
+      <div
+        ref={stageRef}
+        role="region"
+        tabIndex={0}
+        aria-label="Selector de Proyectos"
+        className={`relative w-full overflow-visible select-none outline-none [touch-action:none] ${
           isDragging ? "cursor-grabbing" : "cursor-grab"
         } ${className}`}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerEnd}
-      onKeyDown={handleKeyDown}
-    >
-      <AnimatePresence>
-        {allItems.map((app, index) => {
-          const isCurrent = selectedIndex === index;
-          const isEE = app.__isEE;
+        style={{ height: `${DESIGN_HEIGHT * layout.scale}px` }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+      >
+        <div
+          className="absolute left-0 top-0 [perspective:1400px] [perspective-origin:center_center]"
+          style={{
+            width: `${100 / layout.scale}%`,
+            height: `${DESIGN_HEIGHT}px`,
+            transform: `scale(${layout.scale})`,
+            transformOrigin: "top left",
+          }}
+        >
+          <AnimatePresence>
+            {allItems.map((app, index) => {
+              const isCurrent = selectedIndex === index;
+              const isEE = app.__isEE;
 
-          return (
-            <div
-              key={isEE ? "__ee_auth_card" : app.route || index}
-              ref={(element) => {
-                itemRefs.current[index] = element;
-              }}
-              className="absolute left-1/2 top-1/2 will-change-[transform,opacity,filter] [transform-style:preserve-3d] [backface-visibility:hidden]"
-              style={{ width: `${cardWidth}px`, transformOrigin: "center center" }}
-              onClick={() => handleCardClick(index, app.route)}
-            >
-              {isEE ? (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  className="w-full h-full"
+              return (
+                <div
+                  key={isEE ? "__ee_auth_card" : app.route || index}
+                  ref={(element) => {
+                    itemRefs.current[index] = element;
+                  }}
+                  className="absolute left-1/2 top-1/2 will-change-[transform,opacity,filter] [transform-style:preserve-3d] [backface-visibility:hidden]"
+                  style={{ width: `${cardWidth}px`, transformOrigin: "center center" }}
+                  onClick={() => handleCardClick(index, app.route)}
                 >
-                  <EEAuthCard
-                    isCurrent={isCurrent}
-                    eeSound={eeUnlockSound}
-                    eeRedirectDelay={eeRedirectDelay}
-                    onSuccess={(resolvedRoute) => navigate(resolvedRoute || eeRoute)}
-                  />
-                </motion.div>
-              ) : (
-                <motion.div
-                  layout
-                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  className="w-full h-full"
-                >
-                  <ProjectCard app={app} isCurrent={isCurrent} />
-                </motion.div>
-              )}
-            </div>
-          );
-        })}
-      </AnimatePresence>
+                  {isEE ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      className="w-full h-full"
+                    >
+                      <EEAuthCard
+                        isCurrent={isCurrent}
+                        eeSound={eeUnlockSound}
+                        eeRedirectDelay={eeRedirectDelay}
+                        onSuccess={(resolvedRoute) => navigate(resolvedRoute || eeRoute)}
+                      />
+                    </motion.div>
+                  ) : (
+                    <div className="w-full h-full">
+                      <ProjectCard app={app} isCurrent={isCurrent} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {showDots && items.length > 1 && (
+        <div
+          role="tablist"
+          aria-label="Proyectos"
+          className="mt-3 flex items-center justify-center"
+        >
+          {items.map((app, index) => {
+            const active = selectedIndex === index;
+            return (
+              <button
+                key={app.route || index}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                aria-label={`Ir a ${app.title || app.name || index + 1}`}
+                onClick={() => goTo(index)}
+                className="group cursor-pointer p-1.5 outline-none"
+              >
+                <span
+                  className={`block h-1.5 rounded-full transition-all duration-300 ease-out ${
+                    active
+                      ? "w-5 bg-[#E23F31] shadow-[0_0_10px_rgba(226,63,49,0.5)]"
+                      : "w-1.5 bg-white/20 group-hover:bg-white/45"
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

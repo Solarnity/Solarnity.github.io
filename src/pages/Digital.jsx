@@ -1,13 +1,64 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useIsTouchDevice } from "../utils/device";
 import { CluesScreen } from "../components/Digital/CluesScreen";
 import { TerminalScreen } from "../components/Digital/TerminalScreen";
 import { ProgressScreen } from "../components/Digital/ProgressScreen";
 import { RotateNotice } from "../components/Digital/RotateNotice";
 import { loadProgress, saveProgress, clearProgress } from "../utils/argSec";
 
+const STAGE_DESIGN_WIDTH = 896;
+const STAGE_DESIGN_HEIGHT = 640;
+const PANEL_HEIGHT_RATIO = 0.85;
+const PANEL_WIDTH_RATIO = 0.94;
+
+const readViewport = () => {
+  if (typeof window === "undefined") return { w: 1280, h: 800 };
+  const vv = window.visualViewport;
+  return {
+    w: Math.round(vv?.width ?? window.innerWidth),
+    h: Math.round(vv?.height ?? window.innerHeight),
+  };
+};
+
+const useStageScale = () => {
+  const [viewport, setViewport] = useState(readViewport);
+
+  useEffect(() => {
+    const update = () => setViewport(readViewport());
+    window.addEventListener("resize", update);
+    window.addEventListener("orientationchange", update);
+    window.visualViewport?.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("orientationchange", update);
+      window.visualViewport?.removeEventListener("resize", update);
+    };
+  }, []);
+
+  const touch = useIsTouchDevice();
+  const compact = viewport.h < STAGE_DESIGN_HEIGHT || viewport.w < STAGE_DESIGN_WIDTH + 16;
+
+  const navbarInset = touch ? 0 : 48;
+  const availableHeight = viewport.h - navbarInset * 2;
+  const scale = compact
+    ? Math.max(
+        0.25,
+        Math.min(
+          1,
+          (availableHeight * PANEL_HEIGHT_RATIO) / STAGE_DESIGN_HEIGHT,
+          (viewport.w * PANEL_WIDTH_RATIO) / STAGE_DESIGN_WIDTH
+        )
+      )
+    : 1;
+
+  return { compact, scale, viewport, touch };
+};
+
 export const Digital = () => {
+  const { compact, scale, viewport, touch } = useStageScale();
   const [inMonitorView, setInMonitorView] = useState(true);
   const [isZooming, setIsZooming] = useState(false);
 
@@ -29,7 +80,6 @@ export const Digital = () => {
     }, 40);
   };
 
-  // Manejo de desbloqueo: detecta si es el 9no código para disparar el sonido final
   const handleUnlockSuccess = (codeId, isFinalCode = false) => {
     triggerStaticBurst();
     const updated = [...new Set([...unlockedCodes, codeId])];
@@ -69,8 +119,25 @@ export const Digital = () => {
   };
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden bg-black select-none">
+    <div
+      className="relative h-screen w-screen overflow-hidden bg-black select-none"
+      style={compact ? { height: `${viewport.h}px`, width: `${viewport.w}px` } : undefined}
+    >
       <RotateNotice />
+
+      {touch && (
+        <Link
+          to="/"
+          aria-label="Volver al inicio"
+          className="fixed left-2 top-2 z-[110] flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-black/50 text-white/60 backdrop-blur-sm active:scale-95"
+          style={{
+            left: "calc(env(safe-area-inset-left, 0px) + 0.5rem)",
+            top: "calc(env(safe-area-inset-top, 0px) + 0.5rem)",
+          }}
+        >
+          <ChevronLeft size={16} />
+        </Link>
+      )}
 
       <div
         className="fixed inset-0 pointer-events-none z-0 opacity-35"
@@ -119,8 +186,24 @@ export const Digital = () => {
 
       {!inMonitorView && (
         <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
-          <div className="relative z-20 flex h-[85vh] w-full max-w-4xl items-center justify-center px-12 sm:px-14">
-            
+          <div
+            className={
+              compact
+                ? "relative z-20 flex shrink-0 items-center justify-center px-12 sm:px-14"
+                : "relative z-20 flex h-[85vh] w-full max-w-4xl items-center justify-center px-12 sm:px-14"
+            }
+            style={
+              compact
+                ? {
+                    width: `${STAGE_DESIGN_WIDTH}px`,
+                    height: `${STAGE_DESIGN_HEIGHT}px`,
+                    transform: `scale(${scale})`,
+                    transformOrigin: "center center",
+                  }
+                : undefined
+            }
+          >
+
             {currentScreen > 1 && (
               <button
                 type="button"
@@ -176,13 +259,13 @@ export const Digital = () => {
                     <ProgressScreen
                       unlocked={unlockedCodes}
                       onResetProgress={handleResetProgress}
+                      stageScale={scale}
                     />
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
-            {/* Flecha Derecha */}
             {currentScreen < 3 && (
               <button
                 type="button"

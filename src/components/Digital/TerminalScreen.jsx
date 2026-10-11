@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   View,
   Eye,
@@ -9,6 +9,11 @@ import {
 } from "lucide-react";
 import { motion, useAnimation } from "framer-motion";
 import { hashString, CODE_HASHES } from "../../utils/argSec";
+import {
+  COUNTDOWN_ENABLED,
+  COUNTDOWN_TARGET,
+  COUNTDOWN_EXPIRED_TEXT,
+} from "../../data/countdown";
 
 const SOUNDS = {
   navClick: "/sounds/navClick.mp3",
@@ -28,11 +33,39 @@ const playSound = (src) => {
 
 const TOTAL_CODES = 9;
 
+const pad = (n) => String(n).padStart(2, "0");
+
+const useCountdown = (enabled) => {
+  const target = new Date(COUNTDOWN_TARGET).getTime();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!enabled) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [enabled]);
+
+  if (!enabled) return { expired: false, parts: null };
+
+  const diff = Math.max(0, target - now);
+  const totalSeconds = Math.floor(diff / 1000);
+  return {
+    expired: diff <= 0,
+    parts: {
+      days: Math.floor(totalSeconds / 86400),
+      hours: Math.floor((totalSeconds % 86400) / 3600),
+      minutes: Math.floor((totalSeconds % 3600) / 60),
+      seconds: totalSeconds % 60,
+    },
+  };
+};
+
 export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress }) => {
   const [code, setCode] = useState("");
   const [status, setStatus] = useState("idle");
   const [lastFound, setLastFound] = useState(null);
   const buttonControls = useAnimation();
+  const { expired, parts } = useCountdown(COUNTDOWN_ENABLED);
 
   const allCompleted = unlocked.length >= TOTAL_CODES;
 
@@ -49,7 +82,7 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
     });
 
   const handleValidate = async () => {
-    if (!code.trim() || status === "success" || allCompleted) return;
+    if (!code.trim() || status === "success" || allCompleted || expired) return;
 
     playSound(SOUNDS.navClick);
 
@@ -102,9 +135,10 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
   const validateButtonClass = [
     "flex h-12 w-16 items-center justify-center rounded-lg",
     "transition-colors duration-300 select-none",
-    isSuccess && "bg-[#FFD800] text-black cursor-pointer shadow-[0_0_18px_rgba(255,216,0,0.5)]",
-    isFailed && "bg-white/20 text-white/70 cursor-pointer",
-    !isSuccess && !isFailed &&
+    expired && "bg-white/10 text-white/30 cursor-not-allowed",
+    !expired && isSuccess && "bg-[#FFD800] text-black cursor-pointer shadow-[0_0_18px_rgba(255,216,0,0.5)]",
+    !expired && isFailed && "bg-white/20 text-white/70 cursor-pointer",
+    !expired && !isSuccess && !isFailed &&
       "bg-[#E23F31] text-white hover:bg-[#ff4e3e] cursor-pointer",
   ]
     .filter(Boolean)
@@ -148,7 +182,7 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
               onChange={(e) => setCode(sanitizeCode(e.target.value))}
               onKeyDown={handleKeyDown}
               placeholder="..."
-              disabled={allCompleted}
+              disabled={allCompleted || expired}
               maxLength={48}
               autoComplete="off"
               spellCheck={false}
@@ -160,6 +194,7 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
             <motion.button
               type="button"
               onClick={handleValidate}
+              disabled={expired}
               animate={buttonControls}
               className={validateButtonClass}
               aria-label="Validar código"
@@ -179,12 +214,28 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
               <Eye size={22} className="text-[#E23F31]" />
             </motion.button>
           )}
+
+          {expired && !allCompleted && (
+            <p className="font-mono text-xs tracking-widest text-[#E23F31]">
+              {COUNTDOWN_EXPIRED_TEXT}
+            </p>
+          )}
         </div>
       </div>
 
-      <div className="border-t border-white/[0.06] pt-3 font-mono text-[10px] text-white/30 flex justify-between">
+      <div className="grid grid-cols-3 items-center border-t border-white/[0.06] pt-3 font-mono text-[10px] text-white/30">
         <span>✿</span>
-        <span>{unlocked.length}/9</span>
+        {COUNTDOWN_ENABLED && parts ? (
+          <span
+            className={`text-center tabular-nums tracking-wider ${expired ? "text-[#E23F31]/70" : ""}`}
+            aria-label="Tiempo restante"
+          >
+            {parts.days}d {pad(parts.hours)}h {pad(parts.minutes)}m {pad(parts.seconds)}s
+          </span>
+        ) : (
+          <span />
+        )}
+        <span className="text-right">{unlocked.length}/9</span>
       </div>
     </div>
   );

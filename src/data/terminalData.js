@@ -1,7 +1,6 @@
 export const DATA = [
   {
     id: 1,
-    spoiler: true,
     items: [
       {
         id: "1-1",
@@ -20,29 +19,23 @@ export const DATA = [
       },
       {
         id: "1-4",
-        name: "alonshot36",
-        added: "2020-08-15",
-      },
-      {
-        id: "1-5",
         name: "DharKnhesS",
         added: "2020-08-15",
       },
       {
-        id: "1-6",
+        id: "1-5",
         name: "Infernus",
         added: "2026-02-22",
       },
       {
-        id: "1-7",
-        name: "「📺」S5",
+        id: "1-6",
+        name: "S5",
         added: "2026-02-22",
-      }
-    ]
+      },
+    ],
   },
   {
     id: 2,
-    spoiler: true,
     items: [
       {
         id: "2-1",
@@ -51,8 +44,8 @@ export const DATA = [
       },
       {
         id: "2-2",
-        name: "uWu",
-        added: "2026-02-22",
+        name: "alonshot36",
+        added: "2020-08-15",
       },
       {
         id: "2-3",
@@ -61,135 +54,128 @@ export const DATA = [
       },
       {
         id: "2-4",
-        name: "El Juego Maldito: Kincaid",
-        added: "2026-02-22",
+        name: "Lista de Anime",
+        added: "2020-08-15",
       },
       {
         id: "2-5",
-        name: "MAURICIOCRAFT (me lo mandaron x mail)",
+        name: "El Juego Maldito - Kincaid",
+        added: "2026-02-22",
+      },
+      {
+        id: "2-6",
+        name: "MAURICIOCRAFT",
         added: "2026-02-21",
         link: "https://x.com/mauriciomacri/status/506817804268752896",
       },
       {
-        id: "2-6",
+        id: "2-7",
         name: "el pan dice la biblia vale 1500",
         added: "2020-08-15",
       },
       {
-        id: "2-7",
+        id: "2-8",
         name: "Viernes de Dibujos",
         added: "2020-08-15",
       },
       {
-        id: "2-8",
+        id: "2-9",
         name: "platano dorado",
         added: "2020-08-15",
       },
       {
-        id: "2-9",
-        name: "#📛┆errores",
-        added: "2026-02-22",
-      },
-      {
         id: "2-10",
-        name: "+1000 Screenshots",
-        added: "2020-08-15",
-      },
-      {
-        id: "2-11",
         name: "Mari Setagaya",
         added: "2026-02-22",
         link: "https://i.imgur.com/5u5bp1v.gif",
       },
       {
+        id: "2-11",
+        name: "Zarrapastroso",
+        added: "2026-02-22",
+      },
+      {
         id: "2-12",
         name: "Geometry Dash Universal",
         added: "2020-08-15",
-      }
-    ]
+      },
+    ],
   },
   {
     id: 3,
-    spoiler: true,
     items: [
       {
         id: "3-1",
-        name: "Lista de Anime",
-        added: "2020-08-15",
-      },
-      {
-        id: "3-2",
         name: "fLUCK",
         added: "2026-02-21",
       },
-            {
-        id: "3-3",
+      {
+        id: "3-2",
         name: "Hyper Project",
         added: "2026-02-22",
       },
       {
-        id: "3-4",
+        id: "3-3",
         name: "Za Warudo Tests",
         added: "2020-08-15",
       },
       {
-        id: "3-5",
+        id: "3-4",
         name: "Clubstepfunk",
         added: "2026-02-22",
       },
       {
-        id: "3-6",
+        id: "3-5",
         name: "Theory of Everytime 1 y 2",
         added: "2026-02-22",
       },
       {
-        id: "3-7",
+        id: "3-6",
         name: "Jueves de Retos",
         added: "2020-08-15",
       },
       {
-        id: "3-8",
+        id: "3-7",
         name: "Caja de Libros",
         added: "2020-08-15",
       },
       {
-        id: "3-9",
+        id: "3-8",
         name: "Revolution Dreams",
         added: "2020-08-15",
       },
       {
-        id: "3-10",
+        id: "3-9",
         name: "📽️ jarvis pedilo",
         added: "2026-02-22",
         link: "https://youtu.be/G_XeW7P-1hs",
       },
       {
-        id: "3-11",
+        id: "3-10",
         name: "Viernes 13 de Abril del 2018 (16:49:19)",
         added: "2020-08-15",
       },
       {
-        id: "3-12",
+        id: "3-11",
         name: "📽️ jaja video 1 no quiero grabar más",
         added: "2026-02-22",
         link: "https://youtu.be/r2VidjcAtmw",
       },
       {
-        id: "3-13",
+        id: "3-12",
         name: "📽️ Leave The City (Lyric Video)",
         added: "2026-02-22",
         link: "https://youtu.be/TkpsWb56G0E",
       },
       {
-        id: "3-14",
-        name: "Zarrapastroso",
-        added: "2026-02-22",
-      }
-    ]
+        id: "3-13",
+        name: "+1000 Screenshots",
+        added: "2020-08-15",
+      },
+    ],
   },
   {
     id: 4,
-    spoiler: true,
     items: [
       {
         id: "4-1",
@@ -208,12 +194,7 @@ export const DATA = [
       },
       {
         id: "4-4",
-        name: "Ishuzoku Reviewers",
-        added: "2026-02-22",
-      },
-      {
-        id: "4-5",
-        name: "Konoha",
+        name: "Konoha 1 y 2",
         added: "2026-02-22",
       },
       {
@@ -233,7 +214,7 @@ export const DATA = [
       },
       {
         id: "4-9",
-        name: "Pitbull",
+        name: "Perro Pitbull",
         added: "2020-08-15",
       },
       {
@@ -250,7 +231,7 @@ export const DATA = [
       {
         id: "4-12",
         name: "💿 Breach Digital Remains",
-        added: "2026-02-22"
+        added: "2026-02-22",
       },
       {
         id: "4-13",
@@ -260,18 +241,17 @@ export const DATA = [
       {
         id: "4-14",
         name: "Proyecto TRCN I y II",
-        added: "2026-02-22"
+        added: "2026-02-22",
       },
       {
         id: "4-15",
-        name: "「🔧」RTC Fix",
+        name: "RTC Fix",
         added: "2026-02-22",
-      }
-    ]
+      },
+    ],
   },
   {
     id: 5,
-    spoiler: true,
     items: [
       {
         id: "5-1",
@@ -297,62 +277,46 @@ export const DATA = [
       },
       {
         id: "5-5",
-        name: "Kimera07",
-        added: "2020-08-15",
-      },
-      {
-        id: "5-6",
-        name: "(otaku?)",
-        added: "2020-08-15",
-      },
-      {
-        id: "5-7",
         name: "📽️ Minecraft Minigame Test 1",
         added: "2026-02-22",
         link: "https://youtu.be/WAx9CRuE1sE",
       },
       {
-        id: "5-8",
+        id: "5-6",
         name: "BANNA",
         added: "2020-08-15",
       },
       {
-        id: "5-9",
+        id: "5-7",
         name: "📽️ A Special Announcement",
         added: "2026-02-22",
         link: "https://youtu.be/BSwN7rWFiA0",
       },
       {
-        id: "5-10",
+        id: "5-8",
         name: "The Shadow Gamer",
         added: "2020-08-15",
       },
       {
-        id: "5-11",
+        id: "5-9",
         name: "Parkour Time",
         added: "2026-02-22",
       },
       {
-        id: "5-12",
-        name: "Prototipo Primordial Estigio",
-        added: "2026-02-22",
+        id: "5-10",
+        name: "📽️ HTGP x The Contract",
+        added: "2026-10-10",
+        link: "https://www.youtube.com/watch?v=ZKu_ztlcQbE",
       },
       {
-        id: "5-13",
-        name: "Konoha 2",
-        added: "2026-02-22",
-      },
-      {
-        id: "5-14",
+        id: "5-11",
         name: "Móndrigo",
         added: "2026-02-22",
       },
-
-    ]
+    ],
   },
   {
     id: 6,
-    spoiler: true,
     items: [
       {
         id: "6-1",
@@ -361,7 +325,7 @@ export const DATA = [
       },
       {
         id: "6-2",
-        name: "YouTube - r",
+        name: "🎧 r",
         added: "2026-02-22",
         link: "https://www.youtube.com/playlist?list=PLt3UFTKMOiIhqX9r-jmRbQhrpuvDiYqrc",
       },
@@ -383,46 +347,40 @@ export const DATA = [
       },
       {
         id: "6-6",
-        name: "💿 Echoes of Tomorrow",
-        added: "2026-02-22",
-      },
-      {
-        id: "6-7",
-        name: "📽️ El reto de la botella (Cae de pie) XD.mp4",
-        added: "2026-02-22",
-        link: "https://www.youtube.com/shorts/07LTIAW1XBU",
-      },
-      {
-        id: "6-8",
-        name: "💿 Clancy Digital Remains",
-        added: "2026-02-22",
-      },
-      {
-        id: "6-9",
         name: "@StreetFix_",
         added: "2026-02-22",
         link: "https://x.com/StreetFix_",
       },
       {
+        id: "6-7",
+        name: "💿 Echoes of Tomorrow",
+        added: "2026-02-22",
+      },
+      {
+        id: "6-8",
+        name: "📽️ El reto de la botella (Cae de pie) XD.mp4",
+        added: "2026-02-22",
+        link: "https://www.youtube.com/shorts/07LTIAW1XBU",
+      },
+      {
         id: "6-10",
-        name: "「📺」S1 - S8",
-        added: "2026-02-22"
+        name: "S1 - S8",
+        added: "2026-02-22",
       },
       {
         id: "6-11",
         name: "Otakos Latino",
-        added: "2026-02-22"
+        added: "2026-02-22",
       },
       {
         id: "6-12",
         name: "Clancy Telepizza",
-        added: "2026-02-22"
-      }
-    ]
+        added: "2026-02-22",
+      },
+    ],
   },
   {
     id: 7,
-    spoiler: true,
     items: [
       {
         id: "7-1",
@@ -437,8 +395,9 @@ export const DATA = [
       },
       {
         id: "7-3",
-        name: "SILENCIA",
-        added: "2026-02-22",
+        name: "📽️ CDR TEASER 1",
+        added: "2026-10-10",
+        link: "https://youtu.be/NLwLtdFMqrI",
       },
       {
         id: "7-4",
@@ -447,19 +406,62 @@ export const DATA = [
       },
       {
         id: "7-5",
+        name: "💿 Clancy Digital Remains",
+        added: "2026-12-25",
+      },
+      {
+        id: "7-6",
         name: "📽️ bandicam 2018 04 08 14 07 46 828.mp4",
         added: "2026-02-22",
       },
       {
-        id: "7-6",
+        id: "7-7",
         name: "📽️ Mi video editado 2 xd",
         added: "2026-02-22",
       },
       {
-        id: "7-7",
+        id: "7-8",
+        name: "2026 06 15 01 53 09 ACE",
+        added: "2026-10-10",
+        link: "https://youtu.be/NHCAyAgcNtk",
+      },
+      {
+        id: "7-9",
+        name: "📽️ Pista Desconocida 14 (demos)",
+        added: "2026-10-10",
+        link: "https://youtu.be/SnHmy6TvHRI",
+      },
+    ],
+  },
+  {
+    id: 8,
+    items: [
+      {
+        id: "8-1",
+        name: "SILENCIA",
+        added: "2026-02-22",
+      },
+      {
+        id: "8-2",
         name: "cómic r",
         added: "2026-02-22",
-      }
-    ]
+      },
+            {
+        id: "8-3",
+        name: "Kimera07",
+        added: "2020-08-15",
+      },
+      {
+        id: "8-4",
+        name: "(otaku?)",
+        added: "2020-08-15",
+      },
+      {
+        id: "8-5",
+        name: "BRAINFUCK",
+        added: "2026-12-25",
+        link: "/images/clues/brainfuck.png",
+      },
+    ],
   }
 ];

@@ -8,7 +8,6 @@ import { BorderGlowCard } from "../components/Effects/BorderGlowCard";
 const Secret = () => {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-[#0A0A0A] select-none">
-      {/* Fondo de rayos idéntico a HomePage */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <SideRays
           speed={2.5}
@@ -25,10 +24,8 @@ const Secret = () => {
         />
       </div>
 
-      {/* Estructura central compensando los 48px (h-12) de la Navbar */}
       <main className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-between px-4 sm:px-6 lg:px-8 pt-12 pb-6">
-        
-        {/* Contenido centrado vertical y horizontalmente */}
+
         <div className="my-auto flex flex-1 flex-col items-center justify-center w-full py-6">
           <motion.div
             initial={{ opacity: 0, scale: 0.94, y: 15 }}
@@ -63,10 +60,6 @@ const Secret = () => {
             </div>
           </motion.div>
         </div>
-
-        <footer className="w-full pt-4 border-t border-white/[0.04] text-[#555555] text-xs font-mono text-center">
-          <p>PLGNM • {new Date().getFullYear()}</p>
-        </footer>
       </main>
     </div>
   );

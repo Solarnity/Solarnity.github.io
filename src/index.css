@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comic+Relief:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
 @import "tailwindcss";
@@ -18,7 +20,8 @@
   --font-mono: 'JetBrains Mono', monospace;
   --font-merriweather: 'Courier Prime', 'Courier New', Courier, monospace;
   --font-typewriter: 'TT2020 Style E', 'Courier New', Courier, monospace;
-  --font-comic: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+  --font-comic: "Comic Sans MS", "Comic Sans", "Comic Relief", "Comic Neue", cursive, sans-serif;
+  --font-terminal: "VT323", "Courier New", monospace;
 
   --color-dark-bg: #121212;
   --color-dark-surface: #181818;
@@ -40,7 +43,17 @@ body {
   background-color: var(--color-dark-bg);
   color: var(--color-text-main);
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+}
+
+@supports (height: 100dvh) {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+  .h-screen {
+    height: 100dvh;
+  }
 }
 
 .ink-crystallize {

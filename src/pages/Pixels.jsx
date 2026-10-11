@@ -37,7 +37,6 @@ const Pixels = () => {
 
   const fileInputRef = useRef(null);
 
-  // Redimensionar cuadrícula de forma limpia e instantánea
   const handleGridSizeChange = (newSize) => {
     setPixels((prevPixels) => {
       const nextPixels = Array(newSize * newSize).fill('#FFFFFF');
@@ -176,7 +175,6 @@ const Pixels = () => {
     return list;
   };
 
-  // Contar píxeles omitiendo el fondo blanco
   const colorCount = pixels.reduce((acc, c) => {
     if (c.toUpperCase() !== '#FFFFFF') acc[c] = (acc[c] || 0) + 1;
     return acc;
@@ -203,7 +201,6 @@ const Pixels = () => {
       </div>
 
       <main className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-between px-4 sm:px-6 lg:px-8 pt-16 pb-6">
-        {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <Link
             to="/"
@@ -213,9 +210,7 @@ const Pixels = () => {
           </Link>
         </div>
 
-        {/* WORKSPACE: items-stretch para que la columna izquierda y derecha coincidan en altura total */}
         <div className="my-auto grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-          {/* Columna Izquierda: Toolbox */}
           <div className="col-span-1 h-full">
             <PixelToolbar
               colors={DEFAULT_COLORS}
@@ -237,7 +232,6 @@ const Pixels = () => {
             />
           </div>
 
-          {/* Columna Derecha: Canvas + Stats */}
           <div className="col-span-1 lg:col-span-2 flex flex-col items-center justify-between w-full h-full">
             <PixelCanvas
               gridSize={gridSize}
@@ -258,11 +252,6 @@ const Pixels = () => {
             />
           </div>
         </div>
-
-        {/* Footer */}
-        <footer className="mt-8 w-full pt-4 border-t border-white/[0.04] text-[#555555] text-xs font-mono text-center">
-          <p>PLGNM • {new Date().getFullYear()}</p>
-        </footer>
       </main>
     </div>
   );

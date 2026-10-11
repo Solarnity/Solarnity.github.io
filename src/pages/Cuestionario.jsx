@@ -1,8 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router";
 import { ChevronLeft, Info, Sigma } from "lucide-react";
 import "katex/dist/katex.min.css";
 import { InlineMath } from "react-katex";
+import { PageShell } from "../components/Layout/PageShell";
+import { uiBlue as ui } from "../components/Layout/themes";
+import DotGrid from "../components/Effects/DotGrid";
+import { BorderGlowCard } from "../components/Effects/BorderGlowCard";
+
+const BLUE_RGB = [59, 130, 246];
 
 const Cuestionario = () => {
   const [cuestionarioData, setCuestionarioData] = useState(null);
@@ -54,7 +59,7 @@ const Cuestionario = () => {
         return (
           <pre
             key={index}
-            className="bg-gray-100 p-2 font-mono text-[10px] border border-gray-300 overflow-x-auto whitespace-pre-wrap break-all my-2"
+            className="rounded-lg bg-black/50 p-2 font-mono text-[10px] text-white/80 border border-white/10 overflow-x-auto whitespace-pre-wrap break-all my-2"
           >
             {content}
           </pre>
@@ -69,6 +74,20 @@ const Cuestionario = () => {
       }
       return <span key={index}>{part}</span>;
     });
+  };
+
+  const volverAlInicio = () => {
+    setMostrarContenido(false);
+    setCuestionarioData(null);
+    setShuffledQuestions([]);
+    setRespuestasUsuario({});
+    setPuntajeTotal(0);
+    setCorrectasContador(0);
+    setIncorrectasContador(0);
+    setCurrentQuestionIndex(0);
+    setNombreCuestionario("");
+    setFileName("");
+    setError("");
   };
 
   const handleFileChange = (e) => {
@@ -185,81 +204,92 @@ const Cuestionario = () => {
   const getOpcionClass = (qIdx, oIdx) => {
     const res = respuestasUsuario[qIdx];
     const preg = shuffledQuestions[qIdx];
-    if (!res) return "border-gray-300 hover:border-black";
+    if (!res) return ui.optionIdle;
 
     if (res.verificada) {
       const estaSeleccionada = res.opcionIndices.includes(oIdx);
       const esCorrecta = preg.correctas_shuffled_indices.includes(oIdx);
-      if (esCorrecta)
-        return "border-green-500 bg-green-50 text-green-700 font-bold";
-      if (estaSeleccionada && !esCorrecta)
-        return "border-red-500 bg-red-50 text-red-700";
-      return "border-gray-200 opacity-50";
+      if (esCorrecta) return `${ui.optionCorrect} font-semibold`;
+      if (estaSeleccionada && !esCorrecta) return ui.optionWrong;
+      return "border-white/5 bg-white/[0.02] text-white/30";
     }
 
-    return res.opcionIndices.includes(oIdx)
-      ? "bg-black text-white border-black"
-      : "border-gray-300 hover:bg-gray-50";
+    return res.opcionIndices.includes(oIdx) ? ui.optionSelected : ui.optionIdle;
   };
 
-  return (
-    <div className="h-screen flex flex-col bg-white text-black font-mono p-4 pt-16 overflow-hidden">
-      {mostrarContenido && (
-        <header className="mb-2 pb-2 border-b border-black flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/"
-              className="btn btn-xs btn-square rounded-none bg-black text-white"
-            >
-              <ChevronLeft size={16} />
-            </Link>
-            <span className="font-bold uppercase text-sm">
-              {nombreCuestionario}
-            </span>
-          </div>
-          <button
-            onClick={() => fileInputCargarOtroRef.current?.click()}
-            className="btn btn-xs rounded-none bg-black text-white px-4"
-          >
-            CAMBIAR
-          </button>
-          <input
-            ref={fileInputCargarOtroRef}
-            type="file"
-            accept=".json"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-        </header>
-      )}
+  const preguntaActual = shuffledQuestions[currentQuestionIndex];
+  const respuestaActual = respuestasUsuario[currentQuestionIndex];
 
-      <main className="flex-1 flex flex-col gap-2 min-h-0">
+  return (
+    <PageShell
+      maxWidth="max-w-4xl"
+      baseClass="bg-[#060a14]"
+      backdrop={<DotGrid color={BLUE_RGB} />}
+    >
+      <div
+        className={
+          mostrarContenido
+            ? "flex min-h-0 flex-1 flex-col gap-3 py-2"
+            : "flex flex-1 flex-col justify-center py-2"
+        }
+      >
+        {mostrarContenido && (
+          <header className="flex shrink-0 items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <button
+                type="button"
+                onClick={volverAlInicio}
+                aria-label="Volver al inicio del cuestionario"
+                className={`${ui.btnGhost} flex h-8 w-8 shrink-0 items-center justify-center`}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="truncate font-mono text-sm font-bold uppercase tracking-wider text-white">
+                {nombreCuestionario}
+              </span>
+            </div>
+            <button
+              onClick={() => fileInputCargarOtroRef.current?.click()}
+              className={`${ui.btnGhost} shrink-0 px-4 py-1.5 text-xs`}
+            >
+              CAMBIAR
+            </button>
+            <input
+              ref={fileInputCargarOtroRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </header>
+        )}
+
         {!mostrarContenido && !cargando && (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="w-full max-w-2xl border border-black p-6 md:p-8">
-              <div className="text-center space-y-3">
-                <p className="font-bold uppercase tracking-widest text-xs">
-                  Cargar Cuestionario:
+          <div className="mx-auto w-full max-w-2xl">
+            <BorderGlowCard glowColor="#3B82F6" className="w-full">
+              <div className="relative z-10 p-5 sm:p-8 text-center space-y-3 font-mono">
+                <p className="font-bold uppercase tracking-widest text-xs text-white/80">
+                  Cargar Cuestionario
                 </p>
 
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-8 py-2 bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors text-sm"
+                  className={`${ui.btnPrimary} px-8 py-2.5 text-sm`}
                 >
                   SELECCIONAR ARCHIVO JSON
                 </button>
 
-                <div className="flex items-center justify-center gap-2 mt-2">
+                <label className="mt-2 flex cursor-pointer items-center justify-center gap-2">
                   <input
                     type="checkbox"
                     checked={esAleatorio}
                     onChange={() => setEsAleatorio(!esAleatorio)}
-                    className="checkbox checkbox-xs rounded-none border-black"
+                    className="checkbox checkbox-xs rounded-md border-white/30 [--chkbg:#3B82F6] [--chkfg:white]"
                   />
-                  <span className="text-[10px] font-bold">
+                  <span className="text-[10px] font-bold text-white/60">
                     MODO ALEATORIO (PREGUNTAS Y OPCIONES)
                   </span>
-                </div>
+                </label>
 
                 <input
                   ref={fileInputRef}
@@ -269,15 +299,15 @@ const Cuestionario = () => {
                   className="hidden"
                 />
 
-                <div className="mt-8 text-left border-t border-black pt-6">
-                  <h3 className="text-lg font-bold mb-3 text-center">
+                <div className="mt-6 text-left border-t border-white/[0.08] pt-6">
+                  <h3 className="text-base font-bold mb-3 text-center text-white tracking-wide">
                     ESPECIFICACIONES DEL FORMATO
                   </h3>
 
-                  <div className="space-y-4 text-xs md:text-sm">
-                    <div className="bg-gray-50 p-4 border border-gray-300">
-                      <p className="font-bold mb-2">Estructura del Objeto:</p>
-                      <pre className="whitespace-pre-wrap break-all font-mono text-[10px] bg-white p-3 border border-gray-200">
+                  <div className="space-y-4 text-xs md:text-sm text-white/70">
+                    <div className="rounded-xl bg-white/[0.03] p-4 border border-white/10">
+                      <p className="font-bold mb-2 text-white">Estructura del Objeto:</p>
+                      <pre className="whitespace-pre-wrap break-all font-mono text-[10px] rounded-lg bg-black/50 p-3 border border-white/10 text-white/70">
                         {`{
   "preguntas": [
     {
@@ -293,26 +323,26 @@ const Cuestionario = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="border border-gray-300 p-3">
-                        <p className="font-bold mb-2">
+                      <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                        <p className="font-bold mb-2 text-white">
                           Sintaxis de Enriquecimiento:
                         </p>
                         <ul className="list-disc pl-4 space-y-2 text-[11px]">
                           <li>
-                            <span className="font-bold">
+                            <span className="font-bold text-white/90">
                               Bloques de Código:
                             </span>
                             <br />
-                            <code className="bg-gray-200 px-1">
+                            <code className="rounded bg-white/10 px-1 text-white/80">
                               [INICIO_CODIGO] ... [FIN_CODIGO]
                             </code>
                           </li>
                           <li>
-                            <span className="font-bold">
+                            <span className="font-bold text-white/90">
                               Fórmulas Matemáticas (LaTeX):
                             </span>
                             <br />
-                            <code className="bg-gray-200 px-1">
+                            <code className="rounded bg-white/10 px-1 text-white/80">
                               [INICIO_MAT] ... [FIN_MAT]
                             </code>
                           </li>
@@ -323,18 +353,20 @@ const Cuestionario = () => {
                         </ul>
                       </div>
 
-                      <div className="border border-gray-300 p-3">
-                        <p className="font-bold mb-2">Reglas de Validación:</p>
+                      <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                        <p className="font-bold mb-2 text-white">Reglas de Validación:</p>
                         <ul className="list-disc pl-4 space-y-1 text-[11px]">
                           <li>
-                            <span className="font-mono font-bold">
+                            <span className="font-mono font-bold text-white/90">
                               respuesta_correcta
                             </span>
                             : Debe coincidir exactamente con el texto de una o
                             varias opciones.
                           </li>
                           <li>
-                            <span className="font-mono font-bold">puntaje</span>
+                            <span className="font-mono font-bold text-white/90">
+                              puntaje
+                            </span>
                             : Valor numérico entero.
                           </li>
                           <li>
@@ -345,17 +377,17 @@ const Cuestionario = () => {
                       </div>
                     </div>
 
-                    <div className="bg-yellow-50 border border-yellow-300 p-3 flex justify-between items-center">
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-[#3B82F6]/30 bg-[#3B82F6]/10 p-3">
                       <div>
-                        <p className="font-bold text-xs">RECURSO DE APOYO</p>
-                        <p className="text-[10px]">
+                        <p className="font-bold text-xs text-white">RECURSO DE APOYO</p>
+                        <p className="text-[10px] text-white/60">
                           Esquema base para validación de estructura.
                         </p>
                       </div>
                       <a
                         href="/files/python_cuestionario.json"
                         download="PLANTILLA_CUESTIONARIO.json"
-                        className="btn btn-xs rounded-none bg-black text-white font-bold border-2 border-black hover:bg-white hover:text-black transition-colors"
+                        className={`${ui.btnPrimary} shrink-0 px-3 py-1.5 text-[11px]`}
                       >
                         DESCARGAR JSON
                       </a>
@@ -363,84 +395,76 @@ const Cuestionario = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </BorderGlowCard>
           </div>
         )}
 
         {mostrarContenido && shuffledQuestions.length > 0 && (
           <>
-            <div className="grid grid-cols-3 border border-black divide-x divide-black bg-gray-50">
-              <div className="py-1 text-center">
-                <p className="text-[10px] opacity-60">CORRECTAS</p>
-                <p className="font-bold text-green-600">{correctasContador}</p>
+            <div className={`${ui.panel} grid shrink-0 grid-cols-3 divide-x divide-white/[0.08] py-2`}>
+              <div className="text-center">
+                <p className={ui.label}>Correctas</p>
+                <p className="font-mono font-bold text-emerald-400">{correctasContador}</p>
               </div>
-              <div className="py-1 text-center">
-                <p className="text-[10px] opacity-60">INCORRECTAS</p>
-                <p className="font-bold text-red-600">{incorrectasContador}</p>
+              <div className="text-center">
+                <p className={ui.label}>Incorrectas</p>
+                <p className="font-mono font-bold text-rose-400">{incorrectasContador}</p>
               </div>
-              <div className="py-1 text-center">
-                <p className="text-[10px] opacity-60">PUNTAJE</p>
-                <p className="font-bold">{puntajeTotal}</p>
+              <div className="text-center">
+                <p className={ui.label}>Puntaje</p>
+                <p className="font-mono font-bold text-white">{puntajeTotal}</p>
               </div>
             </div>
 
-            <div className="flex-1 border border-black flex flex-col min-h-0 bg-white">
-              <div className="flex-1 p-4 overflow-y-auto">
-                <div className="flex justify-between text-[10px] opacity-50 mb-2 font-bold uppercase tracking-tighter">
+            <div className={`${ui.panel} flex min-h-0 flex-1 flex-col overflow-hidden`}>
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+                <div className="mb-3 flex justify-between font-mono text-[10px] font-bold uppercase tracking-wider text-white/40">
                   <span>
-                    Pregunta {currentQuestionIndex + 1} /{" "}
-                    {shuffledQuestions.length}
+                    Pregunta {currentQuestionIndex + 1} / {shuffledQuestions.length}
                   </span>
                   <span>
-                    {shuffledQuestions[currentQuestionIndex].dificultad} |{" "}
-                    {shuffledQuestions[currentQuestionIndex].puntaje} PTS
+                    {preguntaActual.dificultad} | {preguntaActual.puntaje} PTS
                   </span>
                 </div>
 
-                <div className="mb-6 text-sm leading-relaxed">
-                  {renderContent(
-                    shuffledQuestions[currentQuestionIndex].pregunta,
-                  )}
+                <div className="mb-6 text-sm leading-relaxed text-white">
+                  {renderContent(preguntaActual.pregunta)}
                 </div>
 
                 <div className="space-y-2">
-                  {shuffledQuestions[currentQuestionIndex].opciones.map(
-                    (opcion, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() =>
-                          seleccionarOpcion(currentQuestionIndex, idx)
-                        }
-                        disabled={
-                          respuestasUsuario[currentQuestionIndex]?.verificada
-                        }
-                        className={`w-full text-left p-3 text-xs border transition-all flex items-start gap-3 ${getOpcionClass(currentQuestionIndex, idx)}`}
-                      >
-                        <span className="opacity-50 font-bold">
-                          {String.fromCharCode(65 + idx)}.
-                        </span>
-                        <div className="flex-1">{renderContent(opcion)}</div>
-                      </button>
-                    ),
-                  )}
+                  {preguntaActual.opciones.map((opcion, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => seleccionarOpcion(currentQuestionIndex, idx)}
+                      disabled={respuestaActual?.verificada}
+                      className={`w-full text-left p-3 text-xs rounded-xl border transition-all duration-300 flex items-start gap-3 cursor-pointer disabled:cursor-default ${getOpcionClass(currentQuestionIndex, idx)}`}
+                    >
+                      <span className="font-mono font-bold opacity-50">
+                        {String.fromCharCode(65 + idx)}.
+                      </span>
+                      <div className="flex-1">{renderContent(opcion)}</div>
+                    </button>
+                  ))}
                 </div>
 
-                {respuestasUsuario[currentQuestionIndex]?.verificada && (
+                {respuestaActual?.verificada && (
                   <div
-                    className={`mt-4 p-3 border text-xs ${respuestasUsuario[currentQuestionIndex].esCorrecta ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"}`}
+                    className={`mt-4 rounded-xl border p-3 text-xs ${
+                      respuestaActual.esCorrecta
+                        ? "border-emerald-500/40 bg-emerald-950/30 text-emerald-200"
+                        : "border-rose-500/40 bg-rose-950/30 text-rose-200"
+                    }`}
                   >
-                    <p className="font-bold uppercase mb-1">
-                      {respuestasUsuario[currentQuestionIndex].esCorrecta
+                    <p className="font-mono font-bold uppercase mb-1">
+                      {respuestaActual.esCorrecta
                         ? "✓ Respuesta Correcta"
                         : "✗ Respuesta Incorrecta"}
                     </p>
-                    {!respuestasUsuario[currentQuestionIndex].esCorrecta && (
+                    {!respuestaActual.esCorrecta && (
                       <div className="mt-1">
                         <span className="font-bold">Solución:</span>
-                        <div className="mt-2 pl-2 border-l-2 border-red-200">
-                          {shuffledQuestions[
-                            currentQuestionIndex
-                          ].respuestas_correctas_array.map((solucion, sIdx) => (
+                        <div className="mt-2 pl-2 border-l-2 border-rose-400/40">
+                          {preguntaActual.respuestas_correctas_array.map((solucion, sIdx) => (
                             <div key={sIdx} className="mb-1">
                               {renderContent(solucion)}
                             </div>
@@ -452,22 +476,19 @@ const Cuestionario = () => {
                 )}
               </div>
 
-              <div className="p-3 border-t border-black bg-gray-50 flex justify-between items-center">
-                {!respuestasUsuario[currentQuestionIndex]?.verificada ? (
+              <div className="flex shrink-0 items-center justify-between border-t border-white/[0.08] bg-white/[0.02] p-3">
+                {!respuestaActual?.verificada ? (
                   <button
                     onClick={() => verificarRespuesta(currentQuestionIndex)}
-                    disabled={
-                      !respuestasUsuario[currentQuestionIndex]?.opcionIndices
-                        .length
-                    }
-                    className="w-full btn btn-sm rounded-none bg-black text-white"
+                    disabled={!respuestaActual?.opcionIndices.length}
+                    className={`${ui.btnPrimary} w-full py-2 text-sm`}
                   >
                     VERIFICAR
                   </button>
                 ) : (
-                  <div className="text-[10px] font-bold flex items-center gap-2">
-                    <Info size={14} />{" "}
-                    {shuffledQuestions[currentQuestionIndex].esMultipleRespuesta
+                  <div className="flex items-center gap-2 font-mono text-[10px] font-bold text-white/60">
+                    <Info size={14} />
+                    {preguntaActual.esMultipleRespuesta
                       ? "ESTA PREGUNTA ERA MULTIPLE"
                       : "PREGUNTA COMPLETADA"}
                   </div>
@@ -475,19 +496,17 @@ const Cuestionario = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid shrink-0 grid-cols-3 gap-2">
               <button
-                onClick={() =>
-                  setCurrentQuestionIndex((prev) => Math.max(0, prev - 1))
-                }
+                onClick={() => setCurrentQuestionIndex((prev) => Math.max(0, prev - 1))}
                 disabled={currentQuestionIndex === 0}
-                className="btn btn-sm rounded-none border-2 border-black bg-white hover:bg-black hover:text-white disabled:opacity-30"
+                className={`${ui.btnGhost} py-2 text-xs`}
               >
                 ATRÁS
               </button>
               <button
                 onClick={() => inicializarCuestionario(cuestionarioData)}
-                className="btn btn-sm rounded-none border-2 border-red-600 bg-white text-red-600 hover:bg-red-600 hover:text-white font-bold"
+                className={`${ui.btnDanger} py-2 text-xs`}
               >
                 REINICIAR
               </button>
@@ -498,15 +517,15 @@ const Cuestionario = () => {
                   )
                 }
                 disabled={currentQuestionIndex === shuffledQuestions.length - 1}
-                className="btn btn-sm rounded-none border-2 border-black bg-white hover:bg-black hover:text-white disabled:opacity-30"
+                className={`${ui.btnGhost} py-2 text-xs`}
               >
                 SIGUIENTE
               </button>
             </div>
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 };
 

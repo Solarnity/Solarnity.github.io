@@ -1,15 +1,76 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, AlertTriangle, Sparkles } from "lucide-react";
 
 const _0x9f = "aHR0cHM6Ly93d3cueW91dHViZS5jb20vcGxheWxpc3Q/bGlzdD1QTEp6b3EteFFZdU5j";
 const getTargetUrl = () => atob(_0x9f);
 
-export const ProgressScreen = ({ unlocked = [], onResetProgress }) => {
+const RingGraphic = ({ unlocked, isAllCompleted, triggering, interactive, onClick }) => {
+  const matrix = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+  return (
+    <div
+      onClick={onClick}
+      className={`relative flex h-72 w-72 sm:h-80 sm:w-80 items-center justify-center ${
+        interactive ? "cursor-pointer group" : ""
+      }`}
+    >
+      <motion.div
+        initial={{ scale: 1 }}
+        animate={triggering ? { scale: 2 } : { scale: 1 }}
+        transition={{ duration: 6.0, ease: "easeIn" }}
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+      >
+        <img
+          src={`/images/districts${isAllCompleted ? "R" : ""}.png`}
+          alt="Districts"
+          className={`h-[48rem] w-[48rem] object-contain transition-all duration-500 ${
+            isAllCompleted
+              ? "opacity-100 drop-shadow-[0_0_15px_rgba(226,63,49,0.85)]"
+              : "opacity-20"
+          }`}
+        />
+      </motion.div>
+
+      <motion.div
+        initial={{ scale: 1 }}
+        animate={triggering ? { scale: 2 } : { scale: 1 }}
+        transition={{ duration: 6.0, ease: "easeIn" }}
+        className="grid grid-cols-3 gap-0 z-10 pointer-events-none items-center justify-center"
+      >
+        {matrix.map((num) => {
+          const isLit = unlocked.includes(num);
+          const iconPath = `/images/bIcons/B${num}${isLit ? "R" : ""}.png`;
+
+          return (
+            <div
+              key={num}
+              className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center"
+            >
+              <img
+                src={iconPath}
+                alt={`B${num}`}
+                className={`h-5 w-5 sm:h-6 sm:w-6 object-contain transition-all duration-300 ${
+                  isLit
+                    ? "opacity-100 drop-shadow-[0_0_4px_rgba(226,63,49,0.9)]"
+                    : "opacity-25"
+                }`}
+              />
+            </div>
+          );
+        })}
+      </motion.div>
+    </div>
+  );
+};
+
+export const ProgressScreen = ({ unlocked = [], onResetProgress, stageScale = 1 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isTriggeringFinal, setIsTriggeringFinal] = useState(false);
-
-  const matrix = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const [finalGeometry, setFinalGeometry] = useState(null);
+  const panelRef = useRef(null);
+  const ringWrapRef = useRef(null);
   const isAllCompleted = unlocked.length >= 9;
 
   useEffect(() => {
@@ -24,6 +85,23 @@ export const ProgressScreen = ({ unlocked = [], onResetProgress }) => {
 
   const handleFinalRingClick = () => {
     if (!isAllCompleted || isTriggeringFinal) return;
+
+    const ringRect = ringWrapRef.current?.getBoundingClientRect();
+    const panelRect = panelRef.current?.getBoundingClientRect();
+    if (ringRect && panelRect) {
+      setFinalGeometry({
+        panel: {
+          left: panelRect.left,
+          top: panelRect.top,
+          width: panelRect.width,
+          height: panelRect.height,
+        },
+        ring: {
+          x: ringRect.left + ringRect.width / 2 - panelRect.left,
+          y: ringRect.top + ringRect.height / 2 - panelRect.top,
+        },
+      });
+    }
     setIsTriggeringFinal(true);
 
     const sound = new Audio("/sounds/finalUnlock.mp3");
@@ -36,77 +114,70 @@ export const ProgressScreen = ({ unlocked = [], onResetProgress }) => {
   };
 
   return (
-    <div className="relative flex h-full w-full flex-col justify-between rounded-2xl border border-white/[0.08] bg-[#0D0D0D]/95 p-6 shadow-2xl overflow-hidden">
-      
-      <AnimatePresence>
-        {isTriggeringFinal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, ease: "linear" }}
-            className="fixed inset-0 z-40 pointer-events-none bg-black"
-          />
-        )}
-      </AnimatePresence>
+    <div
+      ref={panelRef}
+      className="relative flex h-full w-full flex-col justify-between rounded-2xl border border-white/[0.08] bg-[#0D0D0D]/95 p-6 shadow-2xl overflow-hidden"
+    >
+      {createPortal(
+        <AnimatePresence>
+          {isTriggeringFinal && (
+            <>
+              <motion.div
+                key="final-black"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, ease: "linear" }}
+                className="fixed inset-0 z-40 pointer-events-none bg-black"
+              />
+              <div
+                key="final-ring"
+                className="fixed z-50 overflow-hidden pointer-events-none"
+                style={
+                  finalGeometry
+                    ? {
+                        left: `${finalGeometry.panel.left}px`,
+                        top: `${finalGeometry.panel.top}px`,
+                        width: `${finalGeometry.panel.width}px`,
+                        height: `${finalGeometry.panel.height}px`,
+                        borderRadius: `${16 * stageScale}px`,
+                      }
+                    : { inset: 0 }
+                }
+              >
+                <div
+                  className="absolute"
+                  style={{
+                    left: finalGeometry ? `${finalGeometry.ring.x}px` : "50%",
+                    top: finalGeometry ? `${finalGeometry.ring.y}px` : "50%",
+                    transform: `translate(-50%, -50%) scale(${stageScale})`,
+                  }}
+                >
+                  <RingGraphic
+                    unlocked={unlocked}
+                    isAllCompleted={isAllCompleted}
+                    triggering
+                    interactive={false}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <div className="my-auto flex flex-col items-center justify-center py-4 relative z-50">
         <div
-          onClick={handleFinalRingClick}
-          className={`relative flex h-72 w-72 sm:h-80 sm:w-80 items-center justify-center ${
-            isAllCompleted && !isTriggeringFinal ? "cursor-pointer group" : ""
-          }`}
+          ref={ringWrapRef}
+          className={isTriggeringFinal ? "invisible" : undefined}
         >
-          <motion.div
-            animate={
-              isTriggeringFinal
-                ? { scale: 2 }
-                : { scale: 1 }
-            }
-            transition={{ duration: 6.0, ease: "easeIn" }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          >
-            <img
-              src={`/images/districts${isAllCompleted ? "R" : ""}.png`}
-              alt="Districts"
-              className={`h-[48rem] w-[48rem] object-contain transition-all duration-500 ${
-                isAllCompleted
-                  ? "opacity-100 drop-shadow-[0_0_15px_rgba(226,63,49,0.85)]"
-                  : "opacity-20"
-              }`}
-            />
-          </motion.div>
-
-          <motion.div
-            animate={
-              isTriggeringFinal
-                ? { scale: 2 }
-                : { scale: 1 }
-            }
-            transition={{ duration: 6.0, ease: "easeIn" }}
-            className="grid grid-cols-3 gap-0 z-10 pointer-events-none items-center justify-center"
-          >
-            {matrix.map((num) => {
-              const isLit = unlocked.includes(num);
-              const iconPath = `/images/bIcons/B${num}${isLit ? "R" : ""}.png`;
-
-              return (
-                <div
-                  key={num}
-                  className="flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center"
-                >
-                  <img
-                    src={iconPath}
-                    alt={`B${num}`}
-                    className={`h-5 w-5 sm:h-6 sm:w-6 object-contain transition-all duration-300 ${
-                      isLit
-                        ? "opacity-100 drop-shadow-[0_0_4px_rgba(226,63,49,0.9)]"
-                        : "opacity-25"
-                    }`}
-                  />
-                </div>
-              );
-            })}
-          </motion.div>
+          <RingGraphic
+            unlocked={unlocked}
+            isAllCompleted={isAllCompleted}
+            triggering={false}
+            interactive={isAllCompleted && !isTriggeringFinal}
+            onClick={handleFinalRingClick}
+          />
         </div>
       </div>
 

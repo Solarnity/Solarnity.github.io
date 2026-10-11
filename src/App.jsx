@@ -1,3 +1,4 @@
+import { SITE_VERSION_LABEL } from "../version";
 import React, { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router";
 import {
@@ -30,9 +31,10 @@ const APP_ROUTES = [
     path: "/lpc",
     route: "/lpc",
     hidden: false,
+    tag: "NUEVO",
     icon: <Layers size={24} />,
     description:
-      "Listening Party Creator y sincronizador de letras LRC en tiempo real con extracción de metadatos.",
+      "Creador de Listening Party, reproduce música y sincroniza la letra en tiempo real con extracción de metadatos.",
     element: <LPC />,
   },
   {
@@ -41,10 +43,9 @@ const APP_ROUTES = [
     path: "/pixels",
     route: "/pixels",
     hidden: false,
-    tag: "2.0",
     icon: <Blocks size={24} />,
     description:
-      "Estudio de pixel art minimalista con lienzo configurable, modos de numeración y conteo de paleta.",
+      "Haz pixel arts con lienzo configurable, modos de numeración y conteo de colores.",
     element: <Pixels />,
   },
   {
@@ -53,9 +54,10 @@ const APP_ROUTES = [
     path: "/cuestionario",
     route: "/cuestionario",
     hidden: false,
+    tag: "NUEVO",
     icon: <FileQuestionMarkIcon size={24} />,
     description:
-      "Generador dinámico de cuestionarios técnicos con soporte para fórmulas en KaTeX y bloques de código.",
+      "Crea cuestionarios para repasar contenidos, tiene soporte para fórmulas en KaTeX y bloques de código.",
     element: <Cuestionario />,
   },
   {
@@ -64,21 +66,22 @@ const APP_ROUTES = [
     path: "/calculo",
     route: "/calculo",
     hidden: false,
+    tag: "NUEVO",
     icon: <Calculator size={24} />,
     description:
-      "Entrenamiento de agilidad matemática contrarreloj con dificultad adaptativa y estadísticas por sesión.",
+      "Entrenamiento de agilidad matemática a contrarreloj con dificultad adaptativa.",
     element: <CalculoMental />,
   },
   {
     name: "Terminal",
     title: "Terminal",
-    path: "/plrgnm",
-    route: "/plrgnm",
+    path: "/infernalized",
+    route: "/infernalized",
     hidden: true,
     tag: "???",
     icon: <TerminalSquare size={24} />,
     description:
-      "ZW5jdWVudHJhIG1pIGljZWJlcmc=",
+      "El neón es un elemento químico de número atómico 10, símbolo Ne y de masa atómica 20,1797.",
     element: <Terminal />,
   },
   {
@@ -100,7 +103,8 @@ const APP_ROUTES = [
     hidden: true,
     tag: "???",
     icon: <Binary size={24} />,
-    description: "15398642_14",
+    description:
+      "Take excessive measures in attempting to correct or make amends for an error, weakness, or problem.",
     element: <Digital />,
   },
 ];
@@ -109,8 +113,7 @@ export function HomePage() {
   const visibleApps = APP_ROUTES.filter((item) => !item.hidden);
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#0A0A0A]">
-      {/* Fondo de rayos */}
+    <div className="relative h-[100dvh] w-full overflow-hidden bg-[#0A0A0A]">
       <div className="absolute inset-0 z-0 pointer-events-none">
         <SideRays
           speed={2.5}
@@ -127,11 +130,8 @@ export function HomePage() {
         />
       </div>
 
-      {/* Contenedor principal compensando la altura de la Navbar (pt-12) */}
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-between px-4 sm:px-6 lg:px-8 pt-12 pb-6">
-        
-        {/* Espacio central: centrado vertical y horizontal perfecto */}
-        <div className="my-auto flex flex-1 flex-col items-center justify-center w-full py-4">
+      <main className="relative z-10 mx-auto flex h-full min-h-0 max-w-7xl flex-col justify-between px-4 sm:px-6 lg:px-8 pt-12 pb-3 sm:pb-6">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center w-full py-2 sm:py-4">
           <div className="w-full">
             <CardWheel
               items={visibleApps}
@@ -140,20 +140,12 @@ export function HomePage() {
               defaultSelected={0}
             />
           </div>
-
-          {/* Texto de instrucción posicionado directamente debajo de la rueda */}
-          <div className="mt-6 text-center max-w-xl mx-auto px-4">
-            <p className="text-xs sm:text-sm text-[#8E8E8E] leading-relaxed select-none">
-              Gira o arrastra para explorar los proyectos.
-              <br />
-              Haz clic sobre la tarjeta centrada para acceder.
-            </p>
-          </div>
         </div>
 
-        {/* Footer fijo al final */}
-        <footer className="w-full pt-4 border-t border-white/[0.04] text-[#555555] text-xs font-mono text-center">
-          <p>PLGNM • {new Date().getFullYear()}</p>
+        <footer className="w-full pt-3 sm:pt-4 border-t border-white/[0.04] text-[#555555] text-xs font-mono text-center">
+          <p>
+            PLGNM • {SITE_VERSION_LABEL}
+          </p>
         </footer>
       </main>
     </div>
@@ -177,7 +169,7 @@ const TitleManager = () => {
 };
 
 const PageLoader = () => (
-  <div className="min-h-screen flex items-center justify-center text-white">
+  <div className="min-h-[100dvh] flex items-center justify-center text-white">
     <div className="w-6 h-6 border-2 border-[#E23F31] border-t-transparent rounded-full animate-spin" />
   </div>
 );

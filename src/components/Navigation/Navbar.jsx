@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback } from "react";
+import { useIsTouchDevice } from "../../utils/device";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -9,6 +10,82 @@ const playAudio = (src) => {
   audio.play().catch(() => {});
 };
 
+let sharedCtx = null;
+const toRGBA = (cssColor) => {
+  if (!cssColor || cssColor === "transparent") return null;
+  if (!sharedCtx) {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    sharedCtx = canvas.getContext("2d", { willReadFrequently: true });
+  }
+  sharedCtx.clearRect(0, 0, 1, 1);
+  sharedCtx.fillStyle = "#000";
+  sharedCtx.fillStyle = cssColor;
+  sharedCtx.fillRect(0, 0, 1, 1);
+  const [r, g, b, a] = sharedCtx.getImageData(0, 0, 1, 1).data;
+  return { r, g, b, a: a / 255 };
+};
+
+const BASE_BG = { r: 10, g: 10, b: 10 };
+
+const getToneAt = (x, y, header) => {
+  const stack = document.elementsFromPoint(x, y);
+  let remaining = 1;
+  let r = 0;
+  let g = 0;
+  let b = 0;
+
+  for (const el of stack) {
+    if (header && header.contains(el)) continue;
+    const color = toRGBA(getComputedStyle(el).backgroundColor);
+    if (!color || color.a <= 0) continue;
+    const weight = color.a * remaining;
+    r += color.r * weight;
+    g += color.g * weight;
+    b += color.b * weight;
+    remaining *= 1 - color.a;
+    if (remaining < 0.02) break;
+  }
+
+  r += BASE_BG.r * remaining;
+  g += BASE_BG.g * remaining;
+  b += BASE_BG.b * remaining;
+
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luminance > 0.55 ? "light" : "dark";
+};
+
+const useBackdropTone = (headerRef, path) => {
+  const [tones, setTones] = useState({ left: "dark", center: "dark" });
+
+  useEffect(() => {
+    const measure = () => {
+      const header = headerRef.current;
+      if (!header) return;
+      const y = Math.max(header.getBoundingClientRect().height / 2, 1);
+      const left = getToneAt(Math.min(56, window.innerWidth / 2), y, header);
+      const center = getToneAt(window.innerWidth / 2, y, header);
+      setTones((prev) =>
+        prev.left === left && prev.center === center ? prev : { left, center }
+      );
+    };
+
+    measure();
+    const timeouts = [80, 400, 1000].map((ms) => setTimeout(measure, ms));
+    const interval = setInterval(measure, 700);
+    window.addEventListener("resize", measure);
+    return () => {
+      timeouts.forEach(clearTimeout);
+      clearInterval(interval);
+      window.removeEventListener("resize", measure);
+    };
+  }, [headerRef, path]);
+
+  return tones;
+};
+
+const HIDE_ON_TOUCH_ROUTES = ["/digitalremains"];
+
 export const Navbar = ({
   routesConfig = [],
   dullHitSound = "/sounds/dullHit.mp3",
@@ -18,6 +95,14 @@ export const Navbar = ({
 }) => {
   const location = useLocation();
   const currentPath = location.pathname;
+
+  const isTouch = useIsTouchDevice();
+  const hideNavbar = isTouch && HIDE_ON_TOUCH_ROUTES.includes(location.pathname);
+
+  const headerRef = useRef(null);
+  const tones = useBackdropTone(headerRef, currentPath);
+  const leftLight = tones.left === "light";
+  const centerLight = tones.center === "light";
 
   const [eeActive, setEeActive] = useState(false);
   const clickCountRef = useRef(0);
@@ -33,21 +118,18 @@ export const Navbar = ({
     ? [...defaultNavItems, currentHiddenItem]
     : defaultNavItems;
 
-  // Manejador exclusivo para el icono (Flor / Foto)
   const handleIconClick = useCallback(
     (e) => {
       e.stopPropagation();
       playAudio(dullHitSound);
 
       const now = Date.now();
-      const MAX_INTERVAL = 600; // Máximo tiempo entre clics para considerarse "seguidos"
+      const MAX_INTERVAL = 600;
 
-      // Limpia cualquier reinicio programado previo
       if (resetTimerRef.current) {
         clearTimeout(resetTimerRef.current);
       }
 
-      // Si pasa demasiado tiempo, se rompe la racha y se reinicia
       if (now - lastClickTimeRef.current > MAX_INTERVAL) {
         clickCountRef.current = 0;
       }
@@ -56,12 +138,10 @@ export const Navbar = ({
       clickCountRef.current += 1;
       const clicks = clickCountRef.current;
 
-      // Programa reinicio si el usuario se detiene antes de completar la meta
       resetTimerRef.current = setTimeout(() => {
         clickCountRef.current = 0;
       }, MAX_INTERVAL);
 
-      // Estado 1: Inactivo -> Requiere 10 clics seguidos
       if (!eeActive) {
         if (clicks >= 10) {
           clearTimeout(resetTimerRef.current);
@@ -70,7 +150,6 @@ export const Navbar = ({
           playAudio(eeUnlockSound);
         }
       }
-      // Estado 2: Activo -> Requiere 5 clics seguidos para revertir
       else {
         if (clicks >= 5) {
           clearTimeout(resetTimerRef.current);
@@ -84,22 +163,21 @@ export const Navbar = ({
   );
 
   const handleTextClick = () => {
-    // Al dar clic en el texto se limpia la racha de clics del icono
     clickCountRef.current = 0;
   };
 
+  if (hideNavbar) return null;
+
   return (
-    <header className="absolute top-0 left-0 right-0 z-50 w-full h-12 bg-transparent pointer-events-none select-none">
+    <header ref={headerRef} className="absolute top-0 left-0 right-0 z-50 w-full h-12 bg-transparent pointer-events-none select-none">
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 relative flex items-center justify-between pointer-events-auto">
         
-        {/* Contenedor del Logo (Icono interactivo + Texto enlazado a Home) */}
         <div className="flex items-center gap-1.5 z-20 pointer-events-auto">
-          {/* Botón interactivo exclusivo para el icono */}
           <button
             type="button"
             aria-label="Logo Icon"
             onClick={handleIconClick}
-            className="flex items-center justify-center p-0.5 rounded cursor-pointer outline-none border-0 bg-transparent focus-visible:ring-1 focus-visible:ring-white/20 active:scale-95 transition-transform"
+            className={`flex items-center justify-center p-0.5 rounded cursor-pointer outline-none border-0 bg-transparent focus-visible:ring-1 ${leftLight ? "focus-visible:ring-black/30" : "focus-visible:ring-white/20"} active:scale-95 transition-transform`}
           >
             {eeActive ? (
               <motion.img
@@ -116,16 +194,19 @@ export const Navbar = ({
               <img
                 src="/icons/Flower.ico"
                 alt="Flower Logo"
-                className="w-4 h-4 rounded-full opacity-90 hover:rotate-90 transition-transform duration-500 ease-out"
+                className={`w-4 h-4 rounded-full opacity-90 hover:rotate-90 transition-[rotate,filter] duration-500 ease-out brightness-0 ${
+                  leftLight ? "" : "invert"
+                }`}
               />
             )}
           </button>
 
-          {/* Enlace al Home con el texto y el signo '?' animado */}
           <Link
             to="/"
             onClick={handleTextClick}
-            className="flex items-center text-sm font-medium tracking-wider text-white transition-colors duration-200 group"
+            className={`flex items-center text-sm font-medium tracking-wider transition-colors duration-300 group ${
+              leftLight ? "text-black" : "text-white"
+            }`}
           >
             <span>PLGNM</span>
 
@@ -142,7 +223,9 @@ export const Navbar = ({
                     damping: 20,
                     mass: 0.8,
                   }}
-                  className="font-comic font-bold text-white select-none inline-block"
+                  className={`font-comic font-bold select-none inline-block transition-colors duration-300 ${
+                    leftLight ? "text-black" : "text-white"
+                  }`}
                 >
                   ? xd
                 </motion.span>
@@ -151,7 +234,6 @@ export const Navbar = ({
           </Link>
         </div>
 
-        {/* Navegación central con layout animado */}
         <div className="absolute inset-0 hidden md:flex items-center justify-center pointer-events-none">
           <motion.nav
             layout
@@ -173,7 +255,11 @@ export const Navbar = ({
                   <Link
                     to={item.path}
                     className={`relative px-3 py-1 rounded-md text-xs tracking-wide transition-all duration-300 font-medium inline-block ${
-                      isActive
+                      centerLight
+                        ? isActive
+                          ? "text-black font-semibold"
+                          : "text-black/50 hover:text-black"
+                        : isActive
                         ? "text-white [text-shadow:0_0_12px_rgba(255,255,255,0.7)] font-semibold"
                         : "text-[#8E8E8E] hover:text-white hover:[text-shadow:0_0_8px_rgba(255,255,255,0.5)]"
                     }`}
