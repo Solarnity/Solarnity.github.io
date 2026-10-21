@@ -2,12 +2,12 @@ export const defaultClues = [
   {
     "id": 1,
     "type": "image",
-    "content": "/images/clues/translateToATBASH.png"
+    "content": "/images/clues/ATBASH_MAYUS_ENG.png"
   },
   {
     "id": 2,
     "type": "image",
-    "content": "/images/clues/reordenarCode.png"
+    "content": "/images/clues/15398642_14.png"
   },
   {
     "id": 3,
@@ -24,8 +24,8 @@ export const defaultClues = [
   {
     "id": 5,
     "type": "image",
-    "content": "/images/clues/X4X4XX4XX.png",
-    "hint": "_ _ _ _ _ _ _ _ _"
+    "content": "/images/clues/channels_269657133673349120_1252039768729059429.png",
+    "hint": "_ 4 _ 4 _ _ 4 _ _"
   },
   {
     "id": 6,
