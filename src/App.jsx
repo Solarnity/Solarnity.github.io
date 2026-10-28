@@ -9,6 +9,7 @@ import {
   TerminalSquare,
   Radio,
   Binary,
+  BrickWall
 } from "lucide-react";
 
 import { Navbar } from "./components/Navigation/Navbar";
@@ -21,6 +22,7 @@ const Terminal = lazy(() => import("./pages/Terminal"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Cuestionario = lazy(() => import("./pages/Cuestionario"));
 const CalculoMental = lazy(() => import("./pages/CalculoMental"));
+const Muros = lazy(() => import("./pages/Muros"));
 const Secret = lazy(() => import("./pages/Secret"));
 const Digital = lazy(() => import("./pages/Digital"));
 
@@ -31,7 +33,6 @@ const APP_ROUTES = [
     path: "/lpc",
     route: "/lpc",
     hidden: false,
-    tag: "NUEVO",
     icon: <Layers size={24} />,
     description:
       "Creador de Listening Party, reproduce música y sincroniza la letra en tiempo real con extracción de metadatos.",
@@ -54,7 +55,6 @@ const APP_ROUTES = [
     path: "/cuestionario",
     route: "/cuestionario",
     hidden: false,
-    tag: "NUEVO",
     icon: <FileQuestionMarkIcon size={24} />,
     description:
       "Crea cuestionarios para repasar contenidos, tiene soporte para fórmulas en KaTeX y bloques de código.",
@@ -66,11 +66,22 @@ const APP_ROUTES = [
     path: "/calculo",
     route: "/calculo",
     hidden: false,
-    tag: "NUEVO",
     icon: <Calculator size={24} />,
     description:
       "Entrenamiento de agilidad matemática a contrarreloj con dificultad adaptativa.",
     element: <CalculoMental />,
+  },
+  {
+    name: "Muros",
+    title: "Muros",
+    path: "/muros",
+    route: "/muros",
+    hidden: false,
+    tag: "NUEVO",
+    icon: <BrickWall size={24} />,
+    description:
+      "Calculadora de distribución simétrica de pilares y relleno para construir muros en Minecraft, con visualización.",
+    element: <Muros />,
   },
   {
     name: "Terminal",
