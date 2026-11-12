@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Archivos fuente y script de encriptación (solo locales, NUNCA subir a GitHub)
+vault-source/
+scripts/

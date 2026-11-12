@@ -85,6 +85,7 @@ const useBackdropTone = (headerRef, path) => {
 };
 
 const HIDE_ON_TOUCH_ROUTES = ["/digitalremains"];
+const HIDE_ALWAYS_ROUTES = ["/archive"];
 
 export const Navbar = ({
   routesConfig = [],
@@ -97,7 +98,9 @@ export const Navbar = ({
   const currentPath = location.pathname;
 
   const isTouch = useIsTouchDevice();
-  const hideNavbar = isTouch && HIDE_ON_TOUCH_ROUTES.includes(location.pathname);
+  const hideNavbar =
+    HIDE_ALWAYS_ROUTES.includes(location.pathname) ||
+    (isTouch && HIDE_ON_TOUCH_ROUTES.includes(location.pathname));
 
   const headerRef = useRef(null);
   const tones = useBackdropTone(headerRef, currentPath);

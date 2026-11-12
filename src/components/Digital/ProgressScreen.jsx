@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
-import { RotateCcw, AlertTriangle, Sparkles } from "lucide-react";
-
-const _0x9f = "aHR0cHM6Ly93d3cueW91dHViZS5jb20vcGxheWxpc3Q/bGlzdD1QTEp6b3EteFFZdU5j";
-const getTargetUrl = () => atob(_0x9f);
+import { RotateCcw, AlertTriangle } from "lucide-react";
+import { decryptDrRewardCode } from "../../utils/argSec";
 
 const RingGraphic = ({ unlocked, isAllCompleted, triggering, interactive, onClick }) => {
   const matrix = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -66,6 +65,7 @@ const RingGraphic = ({ unlocked, isAllCompleted, triggering, interactive, onClic
 };
 
 export const ProgressScreen = ({ unlocked = [], onResetProgress, stageScale = 1 }) => {
+  const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isTriggeringFinal, setIsTriggeringFinal] = useState(false);
   const [finalGeometry, setFinalGeometry] = useState(null);
@@ -108,8 +108,13 @@ export const ProgressScreen = ({ unlocked = [], onResetProgress, stageScale = 1 
     sound.currentTime = 0;
     sound.play().catch(() => {});
 
-    setTimeout(() => {
-      window.location.href = getTargetUrl();
+    const rewardPromise = decryptDrRewardCode();
+
+    setTimeout(async () => {
+      const claimCode = await rewardPromise;
+      navigate("/archive", {
+        state: claimCode ? { claimCode } : undefined,
+      });
     }, 6000);
   };
 

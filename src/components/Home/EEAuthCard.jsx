@@ -8,6 +8,7 @@ const EE_AUTH_MAP = {
   "4e67c080014aa6295aa33d2b53b259e94999e7cbffd9da06bf4c6b45e593d877": "/secret",
   "411b255e8c928b62eb7725b2ce97c600699944a1353e4bc895024cd08c7bc49d": "/digitalremains",
   "152e69cf3c8e76c8d8b0aed924ddd1708e4c68624611af33d52c2c2814dd5df9": "/infernalized",
+  "9199d9e5b275563cd8c867aa6013d32117ad6232cd0d6e0b7e28b9eb54c80b2c": "/archive",
 };
 
 const verifyEECodeSHA256 = async (codeStr) => {

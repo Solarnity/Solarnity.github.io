@@ -9,7 +9,8 @@ import {
   TerminalSquare,
   Radio,
   Binary,
-  BrickWall
+  BrickWall,
+  Disc3
 } from "lucide-react";
 
 import { Navbar } from "./components/Navigation/Navbar";
@@ -25,8 +26,9 @@ const CalculoMental = lazy(() => import("./pages/CalculoMental"));
 const Muros = lazy(() => import("./pages/Muros"));
 const Secret = lazy(() => import("./pages/Secret"));
 const Digital = lazy(() => import("./pages/Digital"));
+const Archive = lazy(() => import("./pages/Archive"));
 
-const APP_ROUTES = [
+export const APP_ROUTES = [
   {
     name: "LPC",
     title: "LPC",
@@ -117,6 +119,17 @@ const APP_ROUTES = [
     description:
       "Take excessive measures in attempting to correct or make amends for an error, weakness, or problem.",
     element: <Digital />,
+  },
+  {
+    name: "Archive",
+    title: "Archive",
+    path: "/archive",
+    route: "/archive",
+    hidden: true,
+    tag: "???",
+    icon: <Disc3 size={24} />,
+    description: "???",
+    element: <Archive />,
   },
 ];
 

@@ -8,7 +8,7 @@ import {
   Repeat2,
 } from "lucide-react";
 import { motion, useAnimation } from "framer-motion";
-import { hashString, CODE_HASHES } from "../../utils/argSec";
+import { hashString, CODE_HASHES, saveUnlockedCode } from "../../utils/argSec";
 import {
   COUNTDOWN_ENABLED,
   COUNTDOWN_TARGET,
@@ -105,6 +105,7 @@ export const TerminalScreen = ({ unlocked = [], onUnlockSuccess, onGoToProgress 
         setTimeout(() => setStatus("idle"), 2500);
       } else {
         const isFinalCode = unlocked.length + 1 >= TOTAL_CODES;
+        await saveUnlockedCode(matchedId, code);
         setLastFound(matchedId);
         onUnlockSuccess(matchedId, isFinalCode);
         setCode("");
